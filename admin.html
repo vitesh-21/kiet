@@ -233,22 +233,30 @@
     const sidebar = document.getElementById('mySidebar');
     const content = document.getElementById('mainContent');
 
-    toggleBtn.addEventListener('click', function() {
-        // 1. Get the current left position (even if it's set in CSS)
-        const currentLeft = window.getComputedStyle(sidebar).getPropertyValue('left');
+    toggleBtn.addEventListener('click', () => {
+        const screenWidth = window.innerWidth;
 
-        if (window.innerWidth > 768) {
-            // DESKTOP LOGIC
-            if (currentLeft === "0px") {
-                sidebar.style.left = "-230px";
+        if (screenWidth > 768) {
+            // DESKTOP: Slide sidebar in/out
+            if (sidebar.style.left === "0px" || sidebar.style.left === "") {
+                sidebar.style.left = "-230px"; // Hide sidebar
                 content.style.marginLeft = "0px";
             } else {
-                sidebar.style.left = "0px";
+                sidebar.style.left = "0px"; // Show sidebar
                 content.style.marginLeft = "230px";
             }
         } else {
-            // MOBILE LOGIC
+            // MOBILE: Toggle overlay sidebar
             sidebar.classList.toggle('open');
+        }
+    });
+
+    // Optional: Close sidebar on mobile when clicking outside
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+            if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
+                sidebar.classList.remove('open');
+            }
         }
     });
 </script>
