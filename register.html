@@ -1,181 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Diploma System</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        :root {
-            --sidebar-width: 230px;
-            --sidebar-bg: #222d32;
-            --topbar-bg: #00a65a;
-            --main-bg: #ecf0f5;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Source Sans Pro', sans-serif;
-            background-color: var(--main-bg);
-            display: flex;
-            transition: all 0.3s;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--sidebar-bg);
-            min-height: 100vh;
-            color: white;
-            position: fixed;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        /* This class hides the sidebar */
-        .sidebar.collapsed {
-            left: calc(var(--sidebar-width) * -1);
-        }
-
-        .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; }
-        
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: #b8c7ce;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-
-        .nav-item:hover { background: #1e282c; color: #fff; border-left: 3px solid #3c8dbc; }
-        .nav-item i { margin-right: 10px; width: 20px; }
-
-        /* CONTENT */
-        .content {
-            margin-left: var(--sidebar-width);
-            flex-grow: 1;
-            transition: all 0.3s ease;
-            width: calc(100% - var(--sidebar-width));
-        }
-
-        /* This class makes content full-width when sidebar is gone */
-        .content.full-width {
-            margin-left: 0;
-            width: 100%;
-        }
-
-        .top-nav {
-            background-color: var(--topbar-bg);
-            height: 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            color: white;
-        }
-
-        .menu-toggle { cursor: pointer; font-size: 20px; }
-
-        .container { padding: 20px; }
-
-        /* STAT CARDS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-card {
-            padding: 20px;
-            border-radius: 3px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .bg-cyan { background-color: #00c0ef; }
-        .bg-green { background-color: #00a65a; }
-        .bg-orange { background-color: #f39c12; }
-
-        /* MOBILE VIEW */
-        @media (max-width: 768px) {
-            .sidebar { left: -230px; }
-            .content { margin-left: 0; width: 100%; }
-            .sidebar.show-mobile { left: 0; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Sign Up</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #ecf0f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+    }
+    .box {
+        background: white;
+        padding: 30px;
+        width: 400px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    h2 { text-align: center; color: #333; margin-bottom: 20px; }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #00a65a;
+        border: none;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+    button:hover { background: #008d4c; }
+    .alert {
+        margin-bottom: 15px;
+        font-size: 14px;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    .alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+</style>
 </head>
 <body>
 
-    <div class="sidebar" id="sidebar">
-        <div class="brand">DIPLOMA ADMIN</div>
-        <div style="margin-top: 20px;">
-            <a href="#" class="nav-item"><i class="fa fa-dashboard"></i> Dashboard</a>
-            <a href="#" class="nav-item"><i class="fa fa-users"></i> Students</a>
-            <a href="#" class="nav-item"><i class="fa fa-book"></i> Courses</a>
-            <a href="login.html" class="nav-item"><i class="fa fa-sign-out"></i> Logout</a>
-        </div>
-    </div>
+<div class="box">
+    <h2>Student Sign Up</h2>
+    <div id="message"></div>
+    <form id="signupForm">
+        <input type="text" id="full_name" placeholder="Full Name" required>
+        <input type="text" id="reg_number" placeholder="Registration Number" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        
+        <select id="course" required>
+            <option value="" disabled selected>Select Your Course</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Business Information Technology">Business Information Technology</option>
+            <option value="Cyber Security">Cyber Security</option>
+            <option value="Software Engineering">Software Engineering</option>
+        </select>
+        
+        <select id="year" required>
+            <option value="" disabled selected>Select Year</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+        </select>
+        
+        <select id="semester" required>
+            <option value="" disabled selected>Select Semester</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+        </select>
+        
+        <button type="submit">Sign Up</button>
+    </form>
+</div>
 
-    <div class="content" id="content">
-        <nav class="top-nav">
-            <div style="display: flex; align-items: center;">
-                <i class="fa fa-bars menu-toggle" id="toggleBtn"></i>
-                <span style="margin-left: 15px;">Master Student Information System</span>
-            </div>
-            <div>Welcome, Admin</div>
-        </nav>
+<script>
+const form = document.getElementById('signupForm');
+const messageDiv = document.getElementById('message');
 
-        <div class="container">
-            <h2>Overview Dashboard</h2>
+form.addEventListener('submit', function(e){
+    e.preventDefault(); // prevent page reload
 
-            <div class="stats-grid">
-                <div class="stat-card bg-cyan">
-                    <div>
-                        <h3 id="studentCount">0</h3>
-                        <p>TOTAL STUDENTS</p>
-                    </div>
-                    <i class="fa fa-users fa-3x" style="opacity: 0.3;"></i>
-                </div>
+    // Get form values
+    const full_name = document.getElementById('full_name').value.trim();
+    const reg_number = document.getElementById('reg_number').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const course = document.getElementById('course').value;
+    const year = document.getElementById('year').value;
+    const semester = document.getElementById('semester').value;
 
-                <div class="stat-card bg-green">
-                    <div>
-                        <h3>5</h3>
-                        <p>ACTIVE COURSES</p>
-                    </div>
-                    <i class="fa fa-graduation-cap fa-3x" style="opacity: 0.3;"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+    // Basic validation
+    if (!full_name || !reg_number || !email || !password || !course || !year || !semester) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+    }
 
-    <script>
-        const toggleBtn = document.getElementById('toggleBtn');
-        const sidebar = document.getElementById('sidebar');
-        const content = document.getElementById('content');
+    if (!validateEmail(email)) {
+        showMessage('Invalid email address', 'error');
+        return;
+    }
 
-        toggleBtn.addEventListener('click', function() {
-            if (window.innerWidth > 768) {
-                // Desktop Toggle
-                sidebar.classList.toggle('collapsed');
-                content.classList.toggle('full-width');
-            } else {
-                // Mobile Toggle
-                sidebar.classList.toggle('show-mobile');
-            }
-        });
+    if (password.length < 6) {
+        showMessage('Password must be at least 6 characters', 'error');
+        return;
+    }
 
-        // Function to simulate dynamic data in HTML
-        window.onload = function() {
-            // If you are using your signup.php, you can't easily get the count here
-            // but for now, we will set a placeholder number.
-            document.getElementById('studentCount').innerText = "12";
-        };
-    </script>
+    // Save to localStorage (simulate registration)
+    let students = JSON.parse(localStorage.getItem('students') || '[]');
+
+    // Check duplicate registration number
+    if(students.some(s => s.reg_number === reg_number)){
+        showMessage('Registration Number already exists!', 'error');
+        return;
+    }
+
+    students.push({ full_name, reg_number, email, password, course, year, semester });
+    localStorage.setItem('students', JSON.stringify(students));
+
+    showMessage('Student registered successfully!', 'success');
+
+    // Reset form
+    form.reset();
+});
+
+// Helper functions
+function showMessage(msg, type){
+    messageDiv.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+    setTimeout(() => messageDiv.innerHTML = '', 4000);
+}
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.toLowerCase());
+}
+</script>
+
 </body>
 </html>
