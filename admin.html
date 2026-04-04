@@ -23,6 +23,7 @@
             font-family: 'Source Sans Pro', sans-serif;
             background-color: var(--main-bg);
             display: flex;
+            overflow-x: hidden;
         }
 
         /* Sidebar Styling */
@@ -32,7 +33,9 @@
             min-height: 100vh;
             color: white;
             position: fixed;
-            transition: 0.3s;
+            left: 0; /* Starting position */
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
 
         .brand {
@@ -58,12 +61,7 @@
             margin-right: 10px;
         }
 
-        .user-panel .info p {
-            margin: 0;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
+        .user-panel .info p { margin: 0; font-size: 14px; font-weight: 600; }
         .status { font-size: 11px; color: #44dd44; }
 
         .nav-label {
@@ -95,6 +93,8 @@
         .content {
             margin-left: 230px;
             flex-grow: 1;
+            transition: all 0.3s ease;
+            width: 100%;
         }
 
         .top-nav {
@@ -108,11 +108,16 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .container { padding: 20px; }
+        .menu-toggle {
+            cursor: pointer;
+            font-size: 20px;
+            margin-right: 15px;
+        }
 
+        .container { padding: 20px; }
         h2 { font-weight: 400; margin-bottom: 20px; color: #333; }
 
-        /* Stats Cards Grid */
+        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -127,8 +132,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
-            overflow: hidden;
         }
 
         .stat-card h3 { margin: 0; font-size: 38px; }
@@ -140,12 +143,8 @@
         .bg-orange { background-color: #f39c12 !important; }
         .bg-blue { background-color: #3c8dbc !important; }
 
-        .fees-card {
-            grid-column: 1 / -1; /* Makes it full width */
-            height: 120px;
-        }
+        .fees-card { grid-column: 1 / -1; height: 120px; }
 
-        /* Bottom White Box */
         .info-box {
             background: white;
             border-top: 3px solid #d2d6de;
@@ -153,12 +152,17 @@
             box-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
 
-        .info-box h4 { margin-top: 0; }
+        /* Mobile View Adjustment */
+        @media (max-width: 768px) {
+            .sidebar { left: -230px; }
+            .content { margin-left: 0; }
+            .sidebar.open { left: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar" id="mySidebar">
         <div class="brand">DIPLOMA ADMIN</div>
         
         <div class="user-panel">
@@ -180,48 +184,39 @@
 
         <div class="nav-label">ACTIONS</div>
         <a href="#" class="nav-item"><i class="fa fa-plus-circle"></i> Register Student</a>
-        <a href="#" class="nav-item" id="logoutBtn"><i class="fa fa-sign-out"></i> Logout</a>
+        <a href="#" class="nav-item"><i class="fa fa-sign-out"></i> Logout</a>
     </div>
 
-    <div class="content">
+    <div class="content" id="mainContent">
         <nav class="top-nav">
-            <div><i class="fa fa-bars"></i> Master Student Information System</div>
-            <div>Welcome, <span id="welcome-name">Administrator</span> <i class="fa fa-user-shield"></i></div>
+            <div style="display: flex; align-items: center;">
+                <i class="fa fa-bars menu-toggle" id="toggleSidebar"></i> 
+                <span>Master Student Information System</span>
+            </div>
+            <div>Welcome, Administrator <i class="fa fa-user-shield"></i></div>
         </nav>
-
+        
         <div class="container">
             <h2>Overview Dashboard</h2>
 
             <div class="stats-grid">
                 <div class="stat-card bg-cyan">
-                    <div>
-                        <h3>10</h3>
-                        <p>TOTAL STUDENTS</p>
-                    </div>
+                    <div><h3>10</h3><p>TOTAL STUDENTS</p></div>
                     <i class="fa fa-users"></i>
                 </div>
 
                 <div class="stat-card bg-green">
-                    <div>
-                        <h3>10</h3>
-                        <p>ACTIVE COURSES</p>
-                    </div>
+                    <div><h3>10</h3><p>ACTIVE COURSES</p></div>
                     <i class="fa fa-graduation-cap"></i>
                 </div>
 
                 <div class="stat-card bg-orange">
-                    <div>
-                        <h3>52</h3>
-                        <p>REGISTERED UNITS</p>
-                    </div>
+                    <div><h3>52</h3><p>REGISTERED UNITS</p></div>
                     <i class="fa fa-file-lines"></i>
                 </div>
 
                 <div class="stat-card bg-blue fees-card">
-                    <div>
-                        <h3>KES 288,110</h3>
-                        <p>TOTAL FEES OWED</p>
-                    </div>
+                    <div><h3>KES 288,110</h3><p>TOTAL FEES OWED</p></div>
                     <i class="fa fa-money-check-dollar"></i>
                 </div>
             </div>
@@ -234,31 +229,23 @@
     </div>
 
     <script>
-        /* --- JAVASCRIPT LOGIC --- */
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('mySidebar');
+        const content = document.getElementById('mainContent');
 
-        // 1. Check if user is logged in
-        window.onload = function() {
-            const isLoggedIn = localStorage.getItem("isLoggedIn");
-            const userRole = localStorage.getItem("user_role");
-            const username = localStorage.getItem("username");
-
-            // Redirect to login if not logged in or not admin
-            if (isLoggedIn !== "true" || userRole !== "Admin") {
-                alert("Access Denied. Please login as Admin.");
-                window.location.href = "login.html"; // Ensure this matches your login filename
+        toggleBtn.addEventListener('click', function() {
+            // Check if we are on mobile or desktop
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
             } else {
-                // Update names on dashboard
-                document.getElementById("admin-name").innerText = username;
-                document.getElementById("welcome-name").innerText = username;
-            }
-        };
-
-        // 2. Logout Functionality
-        document.getElementById("logoutBtn").addEventListener("click", function(e) {
-            e.preventDefault();
-            if(confirm("Are you sure you want to logout?")) {
-                localStorage.clear(); // Clears session data
-                window.location.href = "login.html"; 
+                // Desktop Toggle logic
+                if (sidebar.style.left === "-230px") {
+                    sidebar.style.left = "0";
+                    content.style.marginLeft = "230px";
+                } else {
+                    sidebar.style.left = "-230px";
+                    content.style.marginLeft = "0";
+                }
             }
         });
     </script>
