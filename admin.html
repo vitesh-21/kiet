@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+body { font-family: Arial; margin:0; display:flex; }
+.sidebar { width:220px; background:#222; color:white; height:100vh; }
+.nav-item { padding:12px; cursor:pointer; }
+.nav-item:hover, .active { background:#00a65a; }
+
+.main { flex:1; padding:20px; }
+.card { padding:20px; background:#00c0ef; color:white; margin:10px; }
+.hidden { display:none; }
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+<h3 style="text-align:center;">ADMIN</h3>
+
+<div class="nav-item active" onclick="switchTab('dashboard')">Dashboard</div>
+<div class="nav-item" onclick="switchTab('students')">Students</div>
+<div class="nav-item" onclick="switchTab('fees')">Fees</div>
+
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+<h2>Dashboard</h2>
+
+<div class="card">
+<h3 id="totalStudents">0</h3>
+<p>Total Students</p>
+</div>
+
+<div class="card">
+<h3 id="totalFees">0</h3>
+<p>Total Fees Owed</p>
+</div>
+
+</div>
+
+<!-- STUDENTS -->
+<div id="students" class="hidden">
+<h2>Students</h2>
+
+<input type="text" id="name" placeholder="Full Name">
+<input type="text" id="reg" placeholder="Reg Number">
+<button onclick="addStudent()">Add Student</button>
+
+<table border="1" width="100%">
+<thead>
+<tr><th>Reg</th><th>Name</th></tr>
+</thead>
+<tbody id="studentTable"></tbody>
+</table>
+
+</div>
+
+<!-- FEES -->
+<div id="fees" class="hidden">
+<h2>Fees</h2>
+
+<table border="1" width="100%">
+<thead>
+<tr>
+<th>Reg</th>
+<th>Name</th>
+<th>Paid</th>
+<th>Balance</th>
+<th>Pay</th>
+</tr>
+</thead>
+
+<tbody id="feeTable"></tbody>
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+// ===== DATABASE (LOCAL STORAGE) =====
+let students = JSON.parse(localStorage.getItem("students")) || [];
+let fees = JSON.parse(localStorage.getItem("fees")) || [];
+
+// ===== SWITCH TAB =====
+function switchTab(tab) {
+document.querySelectorAll(".main > div").forEach(d => d.classList.add("hidden"));
+document.getElementById(tab).classList.remove("hidden");
+}
+
+// ===== ADD STUDENT =====
+function addStudent() {
+let name = document.getElementById("name").value;
+let reg = document.getElementById("reg").value;
+
+if (!name || !reg) {
+alert("Fill all fields");
+return;
+}
+
+let student = { id: Date.now(), name, reg };
+students.push(student);
+
+// create fee record
+fees.push({
+student_id: student.id,
+paid: 0,
+total: 50000
+});
+
+saveData();
+renderStudents();
+renderFees();
+updateDashboard();
+}
+
+// ===== PAY FEES =====
+function payFee(id) {
+let amount = prompt("Enter amount");
+
+let fee = fees.find(f => f.student_id == id);
+fee.paid += Number(amount);
+
+saveData();
+renderFees();
+updateDashboard();
+}
+
+// ===== SAVE =====
+function saveData() {
+localStorage.setItem("students", JSON.stringify(students));
+localStorage.setItem("fees", JSON.stringify(fees));
+}
+
+// ===== RENDER STUDENTS =====
+function renderStudents() {
+let table = document.getElementById("studentTable");
+table.innerHTML = "";
+
+students.forEach(s => {
+table.innerHTML += `
+<tr>
+<td>${s.reg}</td>
+<td>${s.name}</td>
+</tr>
+`;
+});
+}
+
+// ===== RENDER FEES =====
+function renderFees() {
+let table = document.getElementById("feeTable");
+table.innerHTML = "";
+
+students.forEach(s => {
+let fee = fees.find(f => f.student_id == s.id);
+
+let balance = fee.total - fee.paid;
+
+table.innerHTML += `
+<tr>
+<td>${s.reg}</td>
+<td>${s.name}</td>
+<td>${fee.paid}</td>
+<td>${balance}</td>
+<td><button onclick="payFee(${s.id})">Pay</button></td>
+</tr>
+`;
+});
+}
+
+// ===== DASHBOARD =====
+function updateDashboard() {
+document.getElementById("totalStudents").innerText = students.length;
+
+let totalBalance = 0;
+fees.forEach(f => totalBalance += (f.total - f.paid));
+
+document.getElementById("totalFees").innerText = totalBalance;
+}
+
+// ===== INIT =====
+renderStudents();
+renderFees();
+updateDashboard();
+
+</script>
+
+</body>
+</html>
