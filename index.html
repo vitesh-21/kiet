@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Portal</title>
+
     <style>
         body { 
             background: #1a1a2e; 
@@ -14,6 +15,7 @@
             min-height: 100vh; 
             margin: 0; 
         }
+
         .card { 
             background: white; 
             padding: 30px; 
@@ -21,101 +23,149 @@
             width: 380px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
         }
-        h2 { text-align: center; color: #1a1a2e; margin-bottom: 20px; }
-        label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; }
+
+        h2 { 
+            text-align: center; 
+            color: #1a1a2e; 
+            margin-bottom: 20px; 
+        }
+
+        label { 
+            font-size: 13px; 
+            font-weight: bold; 
+            color: #555; 
+            display: block; 
+            margin-bottom: 5px; 
+        }
+
         input, select, button { 
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px;
+            border-radius: 5px; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box; 
         }
+
         button { 
-            background: #007bff; color: white; border: none; 
-            cursor: pointer; font-weight: bold; transition: 0.3s; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.3s; 
         }
-        button:hover { background: #0056b3; }
+
+        button:hover { 
+            background: #0056b3; 
+        }
+
         .error { 
-            background: #f8d7da; color: #721c24; padding: 10px; 
-            border-radius: 5px; margin-bottom: 15px; text-align: center; 
-            font-size: 14px; display: none; /* Hidden by default */
+            background: #f8d7da; 
+            color: #721c24; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            font-size: 14px; 
+            display: none; 
         }
-        .footer-links { text-align: center; margin-top: 10px; }
-        .footer-links a { color: #007bff; text-decoration: none; font-size: 14px; }
+
+        .footer-links { 
+            text-align: center; 
+            margin-top: 10px; 
+        }
+
+        .footer-links a { 
+            color: #007bff; 
+            text-decoration: none; 
+            font-size: 14px; 
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="card">
-        <h2>SYSTEM LOGIN</h2>
-        
-        <div id="error-box" class="error"></div>
+<div class="card">
+    <h2>SYSTEM LOGIN</h2>
 
-        <form id="loginForm">
-            <label>Email Address</label>
-            <input type="email" id="email" placeholder="xx@gmail.com" required>
+    <div id="error-box" class="error"></div>
 
-            <label>Username / Full Name</label>
-            <input type="text" id="username" placeholder="Enter username" required>
+    <form id="loginForm">
 
-            <label>Password</label>
-            <input type="password" id="password" placeholder="••••••••" required>
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="xx@gmail.com" required>
 
-            <label>Login As</label>
-            <select id="role">
-                <option value="Admin">Admin</option>
-                <option value="Student">Student</option>
-            </select>
+        <label>Username / Full Name</label>
+        <input type="text" id="username" placeholder="Enter username" required>
 
-            <button type="submit">Login to Dashboard</button>
-        </form>
-        
-        <div class="footer-links">
-            <a href="forgot_password.html">Forgot Password?</a>
-        </div>
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+
+        <label>Login As</label>
+        <select id="role">
+            <option value="Admin">Admin</option>
+            <option value="Student">Student</option>
+        </select>
+
+        <button type="submit">Login to Dashboard</button>
+    </form>
+
+    <div class="footer-links">
+        <!-- ✅ FIXED LINK -->
+        <a href="forgot_password.html">Forgot Password?</a>
     </div>
+</div>
 
-    <script>
-        // 1. THIS IS YOUR NEW "DATABASE" (Replacing MySQL)
-        const mockUsers = {
-            admins: [
-                { email: "admin@gmail.com", username: "admin", password: "123", redirect: "admin.html" }
-            ],
-            students: [
-                { email: "student@gmail.com", username: "John Doe", password: "123", redirect: "student_dashboard.html" }
-            ]
-        };
+<script>
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Stop page refresh
+    // ===== LOAD DATABASE FROM LOCAL STORAGE =====
+    let admins = JSON.parse(localStorage.getItem("admins")) || [
+        { email: "admin@gmail.com", username: "admin", password: "123", redirect: "admin.html" }
+    ];
 
-            // Get inputs
-            const emailInput = document.getElementById('email').value.trim();
-            const usernameInput = document.getElementById('username').value.trim();
-            const passInput = document.getElementById('password').value.trim();
-            const roleInput = document.getElementById('role').value;
-            const errorBox = document.getElementById('error-box');
+    let students = JSON.parse(localStorage.getItem("students")) || [
+        { email: "student@gmail.com", username: "John Doe", password: "123", redirect: "student_dashboard.html" }
+    ];
 
-            // 2. LOGIC: Replaces your PHP SELECT query
-            let userList = (roleInput === 'Admin') ? mockUsers.admins : mockUsers.students;
-            
-            // Find if a user matches all credentials
-            const validUser = userList.find(u => 
-                u.email === emailInput && 
-                u.username === usernameInput && 
-                u.password === passInput
-            );
+    // ===== LOGIN FUNCTION =====
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-            if (validUser) {
-                // 3. SESSION: Replaces $_SESSION
-                localStorage.setItem('user_role', roleInput);
-                localStorage.setItem('isLoggedIn', 'true');
-                
-                // Redirect
-                window.location.href = validUser.redirect;
-            } else {
-                // Show Error
-                errorBox.innerText = "No user found or invalid credentials.";
-                errorBox.style.display = "block";
-            }
-        });
-    </script>
+        const email = document.getElementById('email').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const role = document.getElementById('role').value;
+        const errorBox = document.getElementById('error-box');
+
+        let userList = (role === 'Admin') ? admins : students;
+
+        const user = userList.find(u =>
+            u.email === email &&
+            u.username === username &&
+            u.password === password
+        );
+
+        if (user) {
+            // SAVE SESSION
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("user_role", role);
+            localStorage.setItem("username", username);
+
+            // REDIRECT
+            window.location.href = user.redirect;
+
+        } else {
+            errorBox.innerText = "Invalid credentials. Try again.";
+            errorBox.style.display = "block";
+        }
+    });
+
+</script>
+
 </body>
 </html>
