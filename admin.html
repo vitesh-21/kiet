@@ -229,25 +229,28 @@
     </div>
 
     <script>
-        const toggleBtn = document.getElementById('toggleSidebar');
-        const sidebar = document.getElementById('mySidebar');
-        const content = document.getElementById('mainContent');
+    const toggleBtn = document.getElementById('toggleSidebar');
+    const sidebar = document.getElementById('mySidebar');
+    const content = document.getElementById('mainContent');
 
-        toggleBtn.addEventListener('click', function() {
-            // Check if we are on mobile or desktop
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('open');
+    toggleBtn.addEventListener('click', function() {
+        // 1. Get the current left position (even if it's set in CSS)
+        const currentLeft = window.getComputedStyle(sidebar).getPropertyValue('left');
+
+        if (window.innerWidth > 768) {
+            // DESKTOP LOGIC
+            if (currentLeft === "0px") {
+                sidebar.style.left = "-230px";
+                content.style.marginLeft = "0px";
             } else {
-                // Desktop Toggle logic
-                if (sidebar.style.left === "-230px") {
-                    sidebar.style.left = "0";
-                    content.style.marginLeft = "230px";
-                } else {
-                    sidebar.style.left = "-230px";
-                    content.style.marginLeft = "0";
-                }
+                sidebar.style.left = "0px";
+                content.style.marginLeft = "230px";
             }
-        });
-    </script>
+        } else {
+            // MOBILE LOGIC
+            sidebar.classList.toggle('open');
+        }
+    });
+</script>
 </body>
 </html>
