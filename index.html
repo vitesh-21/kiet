@@ -122,7 +122,7 @@
 </div>
 
 <script>
-    // 1. Initial Admin setup
+    // 1. Initial Admin setup (Check if admin exists, if not, create one)
     let adminDB = JSON.parse(localStorage.getItem("db_admins"));
     if (!adminDB) {
         adminDB = [{ 
@@ -137,7 +137,7 @@
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Get fresh student data from Admin Dashboard
+        // 2. Get the latest student data from the database
         const studentDB = JSON.parse(localStorage.getItem("db_students")) || [];
 
         const email = document.getElementById('email').value.trim().toLowerCase();
@@ -148,6 +148,7 @@
 
         let userFound = null;
 
+        // 3. Logic for Admin Login
         if (role === 'Admin') {
             userFound = adminDB.find(u => 
                 u.email.toLowerCase() === email && 
@@ -155,29 +156,32 @@
                 u.password === password
             );
             if(userFound) userFound.redirect = "admin.html";
-        } else {
-            // Check specifically against the list created in admin.html
+        } 
+        // 4. Logic for Student Login
+        else {
             userFound = studentDB.find(u => 
                 u.email.toLowerCase() === email && 
                 (u.name === username || u.reg === username) && 
                 u.password === password
             );
             
-            // ✅ CHANGE REDIRECT HERE
-            // ✅ CHANGE REDIRECT HERE
-if(userFound) userFound.redirect = "student_portal.html";
+            // CRITICAL: This must match your filename exactly!
+            if(userFound) userFound.redirect = "portal.html"; 
         }
 
+        // 5. Execution of Login
         if (userFound) {
+            // Save session data so the portal knows who is logged in
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("user_role", role);
             localStorage.setItem("currentUserEmail", email);
             localStorage.setItem("username", username);
 
-            // Execute the redirect
+            // Move to the next page
             window.location.href = userFound.redirect;
         } else {
-            errorBox.innerText = "Invalid credentials. Only registered students can log in.";
+            // Show error message if login fails
+            errorBox.innerText = "Invalid credentials. Please check your details.";
             errorBox.style.display = "block";
         }
     });
