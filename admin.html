@@ -55,9 +55,13 @@
         <a class="nav-item" onclick="showTab('units', this)"><i class="fa fa-book"></i> Units</a>
         <a class="nav-item" onclick="showTab('marks', this)"><i class="fa fa-edit"></i> Score Marks</a>
         <a class="nav-item" onclick="showTab('fees', this)"><i class="fa fa-money-bill"></i> Fees</a>
+        
         <div class="nav-label">ACTIONS</div>
         <a class="nav-item" onclick="logout()"><i class="fa fa-sign-out-alt"></i> Logout</a>
-        <a class="nav-item" onclick="resetSystem()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset System</a>
+        
+        <a class="nav-item" onclick="resetSystem()" style="color:#ff7675; font-size: 11px; opacity: 0.6;">
+            <i class="fa fa-trash"></i> Reset All Data
+        </a>
     </div>
 
     <div class="content" id="content">
@@ -357,14 +361,14 @@ function renderDashboard() {
     `;
 }
 
-// Redirects to Login/Index
+// LOGOUT: Just goes to login page. Safe.
 function logout() {
     window.location.href = "index.html";
 }
 
-// Clears data AND Redirects
+// RESET: Deletes data. Use only if needed.
 function resetSystem() { 
-    if(confirm("CRITICAL: This will delete all students, marks, and fees. Continue?")) { 
+    if(confirm("DANGER: This will delete all student records. Are you sure?")) { 
         localStorage.clear(); 
         window.location.href = "index.html"; 
     } 
