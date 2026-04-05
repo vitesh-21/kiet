@@ -74,6 +74,7 @@
 let currentTab = 'dashboard';
 const SEMESTER_FEE = 50000;
 
+// Mobile toggle
 document.getElementById('menuBtn').onclick = (e) => {
     e.stopPropagation();
     const sidebar = document.getElementById('sidebar');
@@ -291,7 +292,6 @@ function renderDashboard() {
     const c = (JSON.parse(localStorage.getItem('db_courses')) || []).length;
     const u = (JSON.parse(localStorage.getItem('db_units')) || []).length;
     
-    // Calculate total fees
     const feeData = JSON.parse(localStorage.getItem('db_fees')) || {};
     const totalFees = Object.values(feeData).reduce((a, b) => a + b, 0);
 
@@ -319,7 +319,8 @@ function renderDashboard() {
 
 function resetSystem() { if(confirm("Clear system data?")) { localStorage.clear(); location.reload(); } }
 
-renderDashboard();
+// Run on load
+window.onload = renderDashboard;
 </script>
 </body>
 </html>
