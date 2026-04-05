@@ -23,7 +23,7 @@
         /* --- SIDEBAR --- */
         .sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); color: white; position: fixed; top: 0; left: 0; bottom: 0; transition: 0.3s; z-index: 1000; }
         .sidebar.collapsed { transform: translateX(-100%); }
-        .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; }
+        .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; }
         .nav-label { padding: 10px 20px; font-size: 12px; color: #4b646f; background: #1a2226; }
         .nav-item { display: flex; align-items: center; padding: 12px 20px; color: var(--text-gray); text-decoration: none; cursor: pointer; border-left: 3px solid transparent; }
         .nav-item:hover, .nav-item.active { background: var(--sidebar-hover); color: #fff; border-left-color: #3c8dbc; }
@@ -37,6 +37,14 @@
         .container { padding: 20px; }
         .card { background: white; padding: 20px; border-top: 3px solid #d2d6de; box-shadow: 0 1px 1px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
+        /* Stats Cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .stat-card { padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 3px; }
+        .bg-cyan { background: #00c0ef; }
+        .bg-green { background: #00a65a; }
+        .bg-blue { background: #3c8dbc; }
+        .bg-orange { background: #f39c12; }
+
         /* Form Styling */
         .form-inline { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
         .form-group { flex: 1; min-width: 200px; }
@@ -76,13 +84,33 @@
     <div class="content" id="content">
         <nav class="top-nav">
             <i class="fa fa-bars" style="cursor:pointer" id="menuBtn"></i>
-            <span>System Manager</span>
+            <span>Diploma System Manager</span>
             <div>Admin <i class="fa fa-circle" style="color:#4f4; font-size:10px"></i></div>
         </nav>
 
         <div class="container">
-            <h2 id="pageTitle">Dashboard</h2>
+            <h2 id="pageTitle" style="margin-top:0;">Dashboard Overview</h2>
             
+            <div id="dashboardSection">
+                <div class="stats-grid">
+                    <div class="stat-card bg-cyan">
+                        <div><h3 id="dash-students">0</h3><p>STUDENTS</p></div>
+                        <i class="fa fa-users fa-3x" style="opacity:0.3"></i>
+                    </div>
+                    <div class="stat-card bg-green">
+                        <div><h3 id="dash-courses">0</h3><p>COURSES</p></div>
+                        <i class="fa fa-graduation-cap fa-3x" style="opacity:0.3"></i>
+                    </div>
+                    <div class="stat-card bg-blue">
+                        <div><h3 id="dash-fees">KES 0</h3><p>TOTAL FEES</p></div>
+                        <i class="fa fa-money-bill fa-3x" style="opacity:0.3"></i>
+                    </div>
+                </div>
+                <div class="card">
+                    <p>Welcome back, Administrator. Use the sidebar to navigate and manage student records.</p>
+                </div>
+            </div>
+
             <div id="addFormContainer" class="card" style="display:none;">
                 <div class="form-inline">
                     <div class="form-group">
@@ -97,10 +125,8 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div id="tableArea">
-                    <p>Welcome! Click a tab to start managing data.</p>
-                </div>
+            <div id="tableContainer" class="card" style="display:none;">
+                <div id="tableArea"></div>
             </div>
         </div>
     </div>
@@ -110,7 +136,7 @@
         const sidebar = document.getElementById('sidebar');
         const content = document.getElementById('content');
 
-        // Sidebar toggle
+        // Sidebar toggle logic
         document.getElementById('menuBtn').onclick = (e) => {
             e.stopPropagation();
             if(window.innerWidth > 768) {
@@ -125,17 +151,23 @@
             currentTab = tab;
             document.getElementById('pageTitle').innerText = tab.toUpperCase();
             
-            // Update Active Menu
+            // Highlight active menu
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
 
+            const dashSection = document.getElementById('dashboardSection');
             const formBox = document.getElementById('addFormContainer');
+            const tableBox = document.getElementById('tableContainer');
             
             if(tab === 'dashboard') {
+                dashSection.style.display = 'block';
                 formBox.style.display = 'none';
-                renderDashboard();
+                tableBox.style.display = 'none';
+                updateDashCounts();
             } else {
+                dashSection.style.display = 'none';
                 formBox.style.display = 'block';
+                tableBox.style.display = 'block';
                 setupForm(tab);
                 renderTable(tab);
             }
@@ -148,15 +180,14 @@
             const i1 = document.getElementById('input1');
             const i2 = document.getElementById('input2');
 
-            // Reset inputs
             i1.value = ''; i2.value = '';
 
-            // Customize labels based on tab
+            // Update form labels based on tab selection
             if(tab === 'students') { l1.innerText="Student Name"; l2.innerText="Admission No"; i1.placeholder="Ex: John Doe"; i2.placeholder="Ex: DIP/001"; }
             else if(tab === 'courses') { l1.innerText="Course Title"; l2.innerText="Duration"; i1.placeholder="Ex: IT Diploma"; i2.placeholder="Ex: 2 Years"; }
-            else if(tab === 'units') { l1.innerText="Unit Name"; l2.innerText="Unit Code"; i1.placeholder="Ex: Programming I"; i2.placeholder="Ex: ICT101"; }
-            else if(tab === 'fees') { l1.innerText="Student Name"; l2.innerText="Amount Paid (KES)"; i1.placeholder="Ex: Jane Smith"; i2.placeholder="Ex: 5000"; }
-            else { l1.innerText="Title"; l2.innerText="Description"; i1.placeholder="Enter name"; i2.placeholder="Enter detail"; }
+            else if(tab === 'units') { l1.innerText="Unit Name"; l2.innerText="Unit Code"; i1.placeholder="Ex: Data Structures"; i2.placeholder="Ex: UNIT-101"; }
+            else if(tab === 'fees') { l1.innerText="Student Name"; l2.innerText="Amount (KES)"; i1.placeholder="Ex: John Doe"; i2.placeholder="Ex: 15000"; }
+            else { l1.innerText="Name"; l2.innerText="Description"; i1.placeholder="Enter name"; i2.placeholder="Enter details"; }
         }
 
         function handleSave() {
@@ -180,7 +211,7 @@
             const area = document.getElementById('tableArea');
 
             if(data.length === 0) {
-                area.innerHTML = `<p>No records found for ${tab}. Use the form above to add some.</p>`;
+                area.innerHTML = `<p>No records found. Add the first one using the form above.</p>`;
                 return;
             }
 
@@ -192,26 +223,27 @@
             area.innerHTML = html;
         }
 
-        function renderDashboard() {
-            const area = document.getElementById('tableArea');
-            area.innerHTML = `
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
-                    <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
-                        <h3>${(JSON.parse(localStorage.getItem('db_students')) || []).length}</h3><p>Students</p>
-                    </div>
-                    <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
-                        <h3>${(JSON.parse(localStorage.getItem('db_courses')) || []).length}</h3><p>Courses</p>
-                    </div>
-                </div>
-            `;
+        function updateDashCounts() {
+            const students = JSON.parse(localStorage.getItem('db_students')) || [];
+            const courses = JSON.parse(localStorage.getItem('db_courses')) || [];
+            const feesData = JSON.parse(localStorage.getItem('db_fees')) || [];
+            
+            const totalFees = feesData.reduce((sum, f) => sum + (parseFloat(f.col2) || 0), 0);
+
+            document.getElementById('dash-students').innerText = students.length;
+            document.getElementById('dash-courses').innerText = courses.length;
+            document.getElementById('dash-fees').innerText = "KES " + totalFees.toLocaleString();
         }
 
         function resetSystem() {
-            if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); }
+            if(confirm("Are you sure you want to delete ALL data?")) {
+                localStorage.clear();
+                location.reload();
+            }
         }
 
-        // Default view
-        renderDashboard();
+        // Initialize view
+        updateDashCounts();
     </script>
 </body>
 </html>
