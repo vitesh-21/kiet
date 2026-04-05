@@ -31,10 +31,9 @@
         .btn-add { background: #00a65a; color: white; border: none; padding: 0 25px; cursor: pointer; font-weight: bold; border-radius: 2px; height: 40px; width: fit-content; margin-top: 10px; }
         .btn-add:hover { background: #008d4c; }
         table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
-        th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; }
+        th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; text-transform: capitalize; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
         .grade-badge { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 12px; }
-        
         .overview-header { margin-bottom: 15px; font-size: 18px; color: #333; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
 
         @media (max-width: 768px) { 
@@ -137,7 +136,7 @@ function setupForm(tab) {
             <div class="form-row">
                 <div class="form-group"><label>Full Name</label><input type="text" id="s_name"></div>
                 <div class="form-group"><label>Reg Number</label><input type="text" id="s_reg"></div>
-                <div class="form-group"><label>Set Password</label><input type="password" id="s_pass" placeholder="Enter student password"></div>
+                <div class="form-group"><label>Set Password</label><input type="text" id="s_pass" placeholder="e.g. 12345"></div>
             </div>
             <div class="form-row">
                 <div class="form-group"><label>Assign Course</label><select id="courseSelect" onchange="autoFillCourseID('s_course_id')"></select></div>
@@ -234,11 +233,11 @@ function handleSave() {
     } 
     else if(currentTab === 'students') {
         const password = document.getElementById('s_pass').value;
-        if(!password) { alert("Please set a password for the student."); return; }
+        if(!password) { alert("Please set a password."); return; }
         saveData('db_students', { 
             name: document.getElementById('s_name').value, 
             reg: document.getElementById('s_reg').value, 
-            password: password, // Saving password
+            password: password,
             courseName: document.getElementById('courseSelect').value, 
             courseId: document.getElementById('s_course_id').value, 
             year: document.getElementById('s_year').value, 
@@ -301,7 +300,26 @@ function renderTable(tab) {
     }
     else {
         const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
-        area.innerHTML = data.length ? `<table>${Object.keys(data[0]).map(k => `<th>${k}</th>`).join('')}${data.map(i => `<tr>${Object.values(i).map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</table>` : 'No records.';
+        if (!data.length) {
+            area.innerHTML = 'No records found.';
+            return;
+        }
+        
+        let html = `<table><tr>`;
+        // Create Headers
+        Object.keys(data[0]).forEach(key => {
+            html += `<th>${key.replace('password', 'Pass Key')}</th>`;
+        });
+        html += `</tr>`;
+        // Create Rows
+        data.forEach(item => {
+            html += `<tr>`;
+            Object.values(item).forEach(val => {
+                html += `<td>${val}</td>`;
+            });
+            html += `</tr>`;
+        });
+        area.innerHTML = html + `</table>`;
     }
 }
 
@@ -316,7 +334,6 @@ function renderDashboard() {
     document.getElementById('tableArea').innerHTML = `
         <div class="overview-header">DASHBOARD OVERVIEW</div>
         <div style="display: flex; flex-direction: column; gap: 20px;">
-            
             <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
                 <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
                     <h3 style="margin:0; font-size: 24px;">${s}</h3>
@@ -331,14 +348,12 @@ function renderDashboard() {
                     <p style="margin:5px 0 0;">Units Defined</p>
                 </div>
             </div>
-
             <div style="background:#605ca8; color:white; padding:30px; border-radius:3px; text-align: center;">
                 <h2 style="margin: 0; font-size: 36px;">KES ${totalFees.toLocaleString()}</h2>
                 <p style="margin: 10px 0 0; font-size: 18px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
                     Total Fees Collected
                 </p>
             </div>
-
         </div>
     `;
 }
