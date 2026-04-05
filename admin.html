@@ -36,6 +36,8 @@
         .status-pill { padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
         .status-paid { background: #e6fffa; color: #00a65a; }
         .status-pending { background: #fff5f5; color: #dd4b39; }
+        /* Grading styles */
+        .grade-badge { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 12px; }
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.mobile-open { transform: translateX(0); } .content { margin-left: 0 !important; } }
     </style>
 </head>
@@ -48,6 +50,7 @@
         <a class="nav-item" onclick="showTab('students', this)"><i class="fa fa-users"></i> Students</a>
         <a class="nav-item" onclick="showTab('courses', this)"><i class="fa fa-graduation-cap"></i> Courses</a>
         <a class="nav-item" onclick="showTab('units', this)"><i class="fa fa-book"></i> Units</a>
+        <a class="nav-item" onclick="showTab('marks', this)"><i class="fa fa-edit"></i> Score Marks</a>
         <a class="nav-item" onclick="showTab('fees', this)"><i class="fa fa-money-bill"></i> Fees</a>
         <div class="nav-label">ACTIONS</div>
         <a class="nav-item" onclick="resetSystem()" style="color:#ff7675;"><i class="fa fa-trash"></i> logout</a>
@@ -75,7 +78,7 @@
 let currentTab = 'dashboard';
 const sidebar = document.getElementById('sidebar');
 const content = document.getElementById('content');
-const SEMESTER_FEE = 50000; // Constant fee amount
+const SEMESTER_FEE = 50000;
 
 document.getElementById('menuBtn').onclick = (e) => {
     e.stopPropagation();
@@ -86,6 +89,14 @@ document.getElementById('menuBtn').onclick = (e) => {
         sidebar.classList.toggle('mobile-open');
     }
 };
+
+function getGrade(score) {
+    if (score >= 70) return { label: 'A', color: '#00a65a' };
+    if (score >= 60) return { label: 'B', color: '#3c8dbc' };
+    if (score >= 50) return { label: 'C', color: '#f39c12' };
+    if (score >= 40) return { label: 'D', color: '#00c0ef' };
+    return { label: 'E', color: '#dd4b39' };
+}
 
 function showTab(tab, element) {
     currentTab = tab;
@@ -162,6 +173,33 @@ function setupForm(tab) {
         `;
         loadStudentsIntoDropdown('f_student_reg');
     }
+    else if(tab === 'marks') {
+        container.innerHTML = `
+            <div class="form-row">
+                <div class="form-group"><label>Student</label><select id="m_student_reg" onchange="loadUnitsForMarks()"></select></div>
+                <div class="form-group"><label>Unit</label><select id="m_unit_code"></select></div>
+                <div class="form-group"><label>Score (0-100)</label><input type="number" id="m_score" min="0" max="100"></div>
+            </div>
+            <button class="btn-add" onclick="handleSave()">Save Marks</button>
+        `;
+        loadStudentsIntoDropdown('m_student_reg');
+    }
+}
+
+function loadUnitsForMarks() {
+    const reg = document.getElementById('m_student_reg').value;
+    const students = JSON.parse(localStorage.getItem('db_students')) || [];
+    const student = students.find(s => s.reg === reg);
+    const unitSelect = document.getElementById('m_unit_code');
+    unitSelect.innerHTML = '<option value="">-- Select Unit --</option>';
+    
+    if (student) {
+        const units = JSON.parse(localStorage.getItem('db_units')) || [];
+        const filtered = units.filter(u => u.courseId === student.courseId && u.year === student.year && u.sem === student.sem);
+        filtered.forEach(u => {
+            unitSelect.innerHTML += `<option value="${u.code}">${u.name}</option>`;
+        });
+    }
 }
 
 function loadCoursesIntoDropdown(selectId) {
@@ -234,10 +272,21 @@ function handleSave() {
         const reg = document.getElementById('f_student_reg').value;
         const paid = parseFloat(document.getElementById('f_paid_amount').value) || 0;
         if(!reg) return alert("Select a student!");
-        
         let allFees = JSON.parse(localStorage.getItem('db_fees')) || {};
         allFees[reg] = (allFees[reg] || 0) + paid;
         localStorage.setItem('db_fees', JSON.stringify(allFees));
+    }
+    else if(currentTab === 'marks') {
+        const reg = document.getElementById('m_student_reg').value;
+        const code = document.getElementById('m_unit_code').value;
+        const score = parseInt(document.getElementById('m_score').value);
+        if(!reg || !code || isNaN(score)) return alert("Select student, unit and enter marks!");
+        
+        let allMarks = JSON.parse(localStorage.getItem('db_marks')) || [];
+        // Remove old entry for same student/unit if exists
+        allMarks = allMarks.filter(m => !(m.reg === reg && m.code === code));
+        allMarks.push({ reg, code, score });
+        localStorage.setItem('db_marks', JSON.stringify(allMarks));
     }
     setupForm(currentTab);
     renderTable(currentTab);
@@ -255,30 +304,34 @@ function renderTable(tab) {
     if(tab === 'fees') {
         const students = JSON.parse(localStorage.getItem('db_students')) || [];
         const feeData = JSON.parse(localStorage.getItem('db_fees')) || {};
-        
         if(students.length === 0) { area.innerHTML = "<p>No registered students.</p>"; return; }
-
         let html = `<table><tr><th>Student Name</th><th>Reg No</th><th>Total Fee</th><th>Paid</th><th>Balance</th><th>Status</th></tr>`;
         students.forEach(s => {
             const paid = feeData[s.reg] || 0;
             const balance = SEMESTER_FEE - paid;
             const statusClass = balance <= 0 ? 'status-paid' : 'status-pending';
             const statusText = balance <= 0 ? 'Cleared' : 'Pending';
-            
-            html += `<tr>
-                <td>${s.name}</td>
-                <td>${s.reg}</td>
-                <td>${SEMESTER_FEE.toLocaleString()}</td>
-                <td>${paid.toLocaleString()}</td>
-                <td>${balance.toLocaleString()}</td>
-                <td><span class="status-pill ${statusClass}">${statusText}</span></td>
-            </tr>`;
+            html += `<tr><td>${s.name}</td><td>${s.reg}</td><td>${SEMESTER_FEE.toLocaleString()}</td><td>${paid.toLocaleString()}</td><td>${balance.toLocaleString()}</td><td><span class="status-pill ${statusClass}">${statusText}</span></td></tr>`;
         });
         area.innerHTML = html + `</table>`;
-    } else {
+    } 
+    else if(tab === 'marks') {
+        const marksData = JSON.parse(localStorage.getItem('db_marks')) || [];
+        const students = JSON.parse(localStorage.getItem('db_students')) || [];
+        const units = JSON.parse(localStorage.getItem('db_units')) || [];
+        if(marksData.length === 0) { area.innerHTML = "<p>No marks recorded yet.</p>"; return; }
+        let html = `<table><tr><th>Student</th><th>Unit</th><th>Score</th><th>Grade</th></tr>`;
+        marksData.forEach(m => {
+            const student = students.find(s => s.reg === m.reg);
+            const unit = units.find(u => u.code === m.code);
+            const grade = getGrade(m.score);
+            html += `<tr><td>${student ? student.name : m.reg}</td><td>${unit ? unit.name : m.code}</td><td>${m.score}</td><td><span class="grade-badge" style="background:${grade.color}">${grade.label}</span></td></tr>`;
+        });
+        area.innerHTML = html + `</table>`;
+    }
+    else {
         const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
         if(data.length === 0) { area.innerHTML = "<p>No records found.</p>"; return; }
-        
         let html = `<table>`;
         if(tab === 'courses') {
             html += `<tr><th>Course Name</th><th>ID</th><th>Duration</th></tr>`;
