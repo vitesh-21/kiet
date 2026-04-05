@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zetech Student Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root { --nav-dark: #0b1528; --accent-orange: #f36f21; --bg-body: #f0f2f5; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-body); }
+        
+        /* Navigation */
+        .top-nav { background: var(--nav-dark); height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 50px; color: white; position: sticky; top: 0; }
+        .nav-links { display: flex; list-style: none; gap: 20px; }
+        .nav-links li a { color: #bdc3c7; text-decoration: none; cursor: pointer; font-size: 14px; }
+        .nav-links li.active a { color: white; border-bottom: 2px solid var(--accent-orange); }
+
+        /* Profile Circle */
+        .profile-circle { background: #2c3e50; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--accent-orange); cursor: pointer; }
+
+        /* Container & Cards */
+        .main-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: none; border-top: 5px solid var(--accent-orange); }
+        .card.active { display: block; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <div style="display:flex; align-items:center; gap:20px;">
+            <h2 style="color: var(--accent-orange); margin:0;">ZETECH</h2>
+            <ul class="nav-links">
+                <li id="li-home" class="active"><a onclick="showSec('home')">Home</a></li>
+                <li id="li-results"><a onclick="showSec('results')">Results</a></li>
+                <li id="li-fees"><a onclick="showSec('fees')">Finance</a></li>
+            </ul>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <span id="userNameDisplay"></span>
+            <div class="profile-circle" id="userInitial" onclick="logout()"></div>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <section id="home" class="card active">
+            <h2 id="welcomeMsg">Welcome!</h2>
+            <div class="stat-grid">
+                <div class="stat-box"><h4>Course</h4><p id="p-course">-</p></div>
+                <div class="stat-box"><h4>Year</h4><p id="p-year">-</p></div>
+                <div class="stat-box"><h4>Semester</h4><p id="p-sem">-</p></div>
+            </div>
+            <h3>My Units</h3>
+            <table id="unitTable">
+                <thead><tr><th>Unit Code</th><th>Unit Name</th></tr></thead>
+                <tbody id="unitBody"></tbody>
+            </table>
+        </section>
+
+        <section id="results" class="card">
+            <h2>Academic Transcript</h2>
+            <table>
+                <thead><tr><th>Unit Code</th><th>Score</th><th>Grade</th></tr></thead>
+                <tbody id="marksBody"></tbody>
+            </table>
+        </section>
+
+        <section id="fees" class="card">
+            <h2>Fee Statement</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 10px;">
+                <p>Total Paid: <strong id="paidAmount" style="color: green;">KES 0</strong></p>
+                <p>Balance: <strong id="balanceAmount" style="color: red;">KES 0</strong></p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 1. SECURITY CHECK (Like the PHP Session check)
+        const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+        if (!user) {
+            window.location.href = "index.html";
+        }
+
+        // 2. DATA FETCHING (Filtering localDB by student)
+        function loadStudentData() {
+            // Set profile info
+            document.getElementById('userNameDisplay').innerText = user.name;
+            document.getElementById('userInitial').innerText = user.name.substring(0,2).toUpperCase();
+            document.getElementById('welcomeMsg').innerText = `Welcome, ${user.name.split(' ')[0]}!`;
+            document.getElementById('p-course').innerText = user.courseName;
+            document.getElementById('p-year').innerText = user.year;
+            document.getElementById('p-sem').innerText = user.sem;
+
+            // Fetch Units
+            const units = JSON.parse(localStorage.getItem('db_units')) || [];
+            const myUnits = units.filter(u => u.courseId === user.courseId && u.year === user.year && u.sem === user.sem);
+            const unitBody = document.getElementById('unitBody');
+            myUnits.forEach(u => {
+                unitBody.innerHTML += `<tr><td>${u.code}</td><td>${u.name}</td></tr>`;
+            });
+
+            // Fetch Marks
+            const marks = JSON.parse(localStorage.getItem('db_marks')) || [];
+            const myMarks = marks.filter(m => m.reg === user.reg);
+            const marksBody = document.getElementById('marksBody');
+            myMarks.forEach(m => {
+                const grade = getGradeLabel(m.score);
+                marksBody.innerHTML += `<tr><td>${m.code}</td><td>${m.score}%</td><td><strong>${grade}</strong></td></tr>`;
+            });
+
+            // Fetch Fees
+            const allFees = JSON.parse(localStorage.getItem('db_fees')) || {};
+            const paid = allFees[user.reg] || 0;
+            const balance = 50000 - paid; // Assuming 50k is the set fee
+            document.getElementById('paidAmount').innerText = `KES ${paid.toLocaleString()}`;
+            document.getElementById('balanceAmount').innerText = `KES ${balance.toLocaleString()}`;
+        }
+
+        function getGradeLabel(score) {
+            if (score >= 70) return 'A';
+            if (score >= 60) return 'B';
+            if (score >= 50) return 'C';
+            if (score >= 40) return 'D';
+            return 'E';
+        }
+
+        function showSec(id) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('li-' + id).classList.add('active');
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "index.html";
+        }
+
+        window.onload = loadStudentData;
+    </script>
+</body>
+</html>
