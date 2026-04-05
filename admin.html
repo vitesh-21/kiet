@@ -20,7 +20,6 @@
 
         body { margin: 0; font-family: 'Source Sans Pro', sans-serif; background-color: var(--main-bg); display: flex; min-height: 100vh; }
 
-        /* --- SIDEBAR --- */
         .sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); color: white; position: fixed; top: 0; left: 0; bottom: 0; transition: transform 0.3s ease; z-index: 1000; }
         .sidebar.collapsed { transform: translateX(-100%); }
         .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; }
@@ -29,14 +28,12 @@
         .nav-item:hover, .nav-item.active { background: var(--sidebar-hover); color: #fff; border-left-color: #3c8dbc; }
         .nav-item i { margin-right: 10px; width: 20px; }
 
-        /* --- CONTENT AREA --- */
         .content { margin-left: var(--sidebar-width); flex-grow: 1; width: 100%; transition: margin-left 0.3s ease; }
         .content.expanded { margin-left: 0; }
         .top-nav { background-color: var(--topbar-bg); height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; color: white; }
         .menu-toggle { cursor: pointer; font-size: 20px; }
         .container { padding: 20px; }
 
-        /* Page Headers & Add Button */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .btn-add { background: #3c8dbc; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; font-weight: 600; }
         .btn-add:hover { background: #367fa9; }
@@ -47,157 +44,224 @@
         th { background: #f4f4f4; text-align: left; padding: 10px; border-bottom: 2px solid #ddd; }
         td { padding: 10px; border-bottom: 1px solid #ddd; }
 
-        /* --- MODAL (POPUP) --- */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 20px; width: 400px; border-radius: 5px; position: relative; }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 500px; border-radius: 5px; position: relative; max-height: 90vh; overflow-y: auto; }
         .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .close-modal { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 20px; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; box-sizing: border-box; }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+        }
+
         .btn-save { background: #00a65a; color: white; border: none; width: 100%; padding: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.mobile-open { transform: translateX(0); }
             .content { margin-left: 0 !important; }
-            .modal-content { width: 90%; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar" id="sidebar">
-        <div class="brand">DIPLOMA ADMIN</div>
-        <div class="nav-label">MAIN NAVIGATION</div>
-        <a class="nav-item active" onclick="navigate('dashboard')"><i class="fa fa-dashboard"></i> Dashboard</a>
-        <a class="nav-item" onclick="navigate('students')"><i class="fa fa-users"></i> Students</a>
-        <a class="nav-item" onclick="navigate('courses')"><i class="fa fa-graduation-cap"></i> Courses</a>
-        <a class="nav-item" onclick="navigate('units')"><i class="fa fa-book"></i> Units</a>
-        <a class="nav-item" onclick="navigate('fees')"><i class="fa fa-money-bill"></i> Fees</a>
-        
-        <div class="nav-label">SYSTEM</div>
-        <a class="nav-item" onclick="clearAllData()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset Data</a>
+<div class="sidebar" id="sidebar">
+    <div class="brand">DIPLOMA ADMIN</div>
+    <div class="nav-label">MAIN NAVIGATION</div>
+    <a class="nav-item active" onclick="navigate('dashboard')"><i class="fa fa-dashboard"></i> Dashboard</a>
+    <a class="nav-item" onclick="navigate('students')"><i class="fa fa-users"></i> Students</a>
+    <a class="nav-item" onclick="navigate('courses')"><i class="fa fa-graduation-cap"></i> Courses</a>
+    <a class="nav-item" onclick="navigate('units')"><i class="fa fa-book"></i> Units</a>
+    <a class="nav-item" onclick="navigate('fees')"><i class="fa fa-money-bill"></i> Fees</a>
+    
+    <div class="nav-label">SYSTEM</div>
+    <a class="nav-item" onclick="clearAllData()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset Data</a>
+</div>
+
+<div class="content" id="content">
+    <nav class="top-nav">
+        <i class="fa fa-bars menu-toggle" id="menuBtn"></i>
+        <span>Diploma Management System</span>
+    </nav>
+
+    <div class="container" id="main-view"></div>
+</div>
+
+<div id="entryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-header" id="modalTitle"></div>
+        <div id="modalBody"></div>
+        <button class="btn-save" onclick="saveData()">Save Record</button>
     </div>
+</div>
 
-    <div class="content" id="content">
-        <nav class="top-nav">
-            <div style="display: flex; align-items: center;">
-                <i class="fa fa-bars menu-toggle" id="menuBtn"></i>
-                <span style="margin-left:15px;">Diploma Management System</span>
-            </div>
-        </nav>
+<script>
+let currentTab = 'dashboard';
 
-        <div class="container" id="main-view">
-            </div>
-    </div>
+// NAVIGATION
+function navigate(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    renderView();
+}
 
-    <div id="entryModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <div class="modal-header" id="modalTitle">Add New Entry</div>
-            <div id="modalBody">
-                </div>
-            <button class="btn-save" onclick="saveData()">Save Record</button>
-        </div>
-    </div>
+// RENDER VIEW
+function renderView() {
+    const container = document.getElementById('main-view');
 
-    <script>
-        const sidebar = document.getElementById('sidebar');
-        const content = document.getElementById('content');
-        const menuBtn = document.getElementById('menuBtn');
-        let currentTab = 'dashboard';
+    let html = `<div class="page-header">
+        <h2>${currentTab.toUpperCase()}</h2>
+        ${currentTab !== 'dashboard' ? `<button class="btn-add" onclick="openModal()">+ Add</button>` : ''}
+    </div>`;
 
-        // --- SIDEBAR LOGIC ---
-        menuBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (window.innerWidth > 768) {
-                sidebar.classList.toggle('collapsed');
-                content.classList.toggle('expanded');
-            } else {
-                sidebar.classList.toggle('mobile-open');
-            }
-        });
+    html += `<div class="info-box">`;
 
-        // --- NAVIGATION & RENDERING ---
-        function navigate(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            renderView();
-            if (window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
+    if (currentTab === 'dashboard') {
+        html += `<p>Welcome Admin 👋</p>`;
+    }
+
+    // STUDENTS TABLE
+    else if (currentTab === 'students') {
+        const students = JSON.parse(localStorage.getItem('students')) || [];
+
+        if (students.length === 0) {
+            html += `<p>No students found</p>`;
+        } else {
+            html += `
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Reg</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Year</th>
+                    <th>Sem</th>
+                </tr>`;
+
+            students.forEach(s => {
+                html += `
+                <tr>
+                    <td>${s.full_name}</td>
+                    <td>${s.reg_number}</td>
+                    <td>${s.email}</td>
+                    <td>${s.course}</td>
+                    <td>${s.year}</td>
+                    <td>${s.semester}</td>
+                </tr>`;
+            });
+
+            html += `</table>`;
         }
+    }
 
-        function renderView() {
-            const container = document.getElementById('main-view');
-            let html = `<div class="page-header">
-                            <h2>${currentTab.toUpperCase()}</h2>
-                            ${currentTab !== 'dashboard' ? `<button class="btn-add" onclick="openModal()">+ Add ${currentTab.slice(0,-1)}</button>` : ''}
-                        </div>`;
+    // OTHER TABS
+    else {
+        const data = JSON.parse(localStorage.getItem('sys_' + currentTab)) || [];
 
-            const data = JSON.parse(localStorage.getItem('sys_' + currentTab)) || [];
-
-            html += `<div class="info-box">`;
-            if (currentTab === 'dashboard') {
-                html += `<p>Select a tab from the sidebar to manage records.</p>`;
-            } else if (data.length === 0) {
-                html += `<p>No records found in ${currentTab}. Click the button above to add one.</p>`;
-            } else {
-                html += `<table><tr><th>Name/Title</th><th>Detail</th></tr>`;
-                data.forEach(item => {
-                    html += `<tr><td>${item.name}</td><td>${item.detail}</td></tr>`;
-                });
-                html += `</table>`;
-            }
-            html += `</div>`;
-            container.innerHTML = html;
+        if (data.length === 0) {
+            html += `<p>No records found</p>`;
+        } else {
+            html += `<table><tr><th>Name</th><th>Details</th></tr>`;
+            data.forEach(item => {
+                html += `<tr><td>${item.name}</td><td>${item.detail}</td></tr>`;
+            });
+            html += `</table>`;
         }
+    }
 
-        // --- MODAL LOGIC ---
-        function openModal() {
-            const modal = document.getElementById('entryModal');
-            const title = document.getElementById('modalTitle');
-            const body = document.getElementById('modalBody');
-            
-            title.innerText = "Add New " + currentTab.slice(0,-1);
-            
-            // Customize inputs based on tab
-            let label2 = currentTab === 'students' || currentTab === 'fees' ? "Amount (KES)" : "Description/Code";
-            body.innerHTML = `
-                <label>Name</label>
-                <input type="text" id="inputName" placeholder="Enter Name...">
-                <label>${label2}</label>
-                <input type="text" id="inputDetail" placeholder="Enter Details...">
-            `;
-            
-            modal.style.display = "block";
-        }
+    html += `</div>`;
+    container.innerHTML = html;
+}
 
-        function closeModal() {
-            document.getElementById('entryModal').style.display = "none";
-        }
+// MODAL
+function openModal() {
+    const body = document.getElementById('modalBody');
 
-        function saveData() {
-            const name = document.getElementById('inputName').value;
-            const detail = document.getElementById('inputDetail').value;
+    if (currentTab === 'students') {
+        body.innerHTML = `
+            <input type="text" id="full_name" placeholder="Full Name">
+            <input type="text" id="reg_number" placeholder="Reg Number">
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
 
-            if(!name || !detail) return alert("Please fill fields");
+            <select id="course">
+                <option value="">Course</option>
+                <option>IT</option>
+                <option>CS</option>
+            </select>
 
-            const data = JSON.parse(localStorage.getItem('sys_' + currentTab)) || [];
-            data.push({ name, detail });
-            localStorage.setItem('sys_' + currentTab, JSON.stringify(data));
+            <select id="year">
+                <option value="">Year</option>
+                <option>1</option>
+                <option>2</option>
+            </select>
 
-            closeModal();
-            renderView();
-        }
+            <select id="semester">
+                <option value="">Semester</option>
+                <option>1</option>
+                <option>2</option>
+            </select>
+        `;
+    } else {
+        body.innerHTML = `
+            <input type="text" id="inputName" placeholder="Name">
+            <input type="text" id="inputDetail" placeholder="Details">
+        `;
+    }
 
-        function clearAllData() {
-            if(confirm("Wipe all system data?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
+    document.getElementById('entryModal').style.display = "block";
+}
 
-        // Initial Load
-        renderView();
-    </script>
+function closeModal() {
+    document.getElementById('entryModal').style.display = "none";
+}
+
+// SAVE DATA
+function saveData() {
+
+    if (currentTab === 'students') {
+
+        let students = JSON.parse(localStorage.getItem('students') || '[]');
+
+        const student = {
+            full_name: document.getElementById('full_name').value,
+            reg_number: document.getElementById('reg_number').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            course: document.getElementById('course').value,
+            year: document.getElementById('year').value,
+            semester: document.getElementById('semester').value
+        };
+
+        students.push(student);
+        localStorage.setItem('students', JSON.stringify(students));
+
+    } else {
+        const name = document.getElementById('inputName').value;
+        const detail = document.getElementById('inputDetail').value;
+
+        let data = JSON.parse(localStorage.getItem('sys_' + currentTab)) || [];
+        data.push({ name, detail });
+        localStorage.setItem('sys_' + currentTab, JSON.stringify(data));
+    }
+
+    closeModal();
+    renderView();
+}
+
+// RESET
+function clearAllData() {
+    localStorage.clear();
+    location.reload();
+}
+
+// INIT
+renderView();
+</script>
+
 </body>
 </html>
