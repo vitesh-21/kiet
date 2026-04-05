@@ -35,7 +35,8 @@
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
         .grade-badge { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 12px; }
         
-        /* Mobile specific adjustments */
+        .overview-header { margin-bottom: 15px; font-size: 18px; color: #333; font-weight: 600; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+
         @media (max-width: 768px) { 
             .sidebar { transform: translateX(-100%); } 
             .sidebar.mobile-open { transform: translateX(0); } 
@@ -301,8 +302,8 @@ function renderDashboard() {
     const feeData = JSON.parse(localStorage.getItem('db_fees')) || {};
     const totalFees = Object.values(feeData).reduce((a, b) => a + b, 0);
 
-    // Forces a physical layout separation using a Flex-Column container
     document.getElementById('tableArea').innerHTML = `
+        <div class="overview-header">DASHBOARD OVERVIEW</div>
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
             <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
