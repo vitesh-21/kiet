@@ -34,6 +34,8 @@
 
         .logout-btn { background: none; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 5px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
         .logout-btn:hover { background: var(--accent-orange); color: white; }
+        
+        .empty-msg { color: #888; font-style: italic; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -43,7 +45,8 @@
             <h2 style="color: var(--accent-orange); margin:0;">ZETECH</h2>
             <ul class="nav-links">
                 <li id="li-home" class="active"><a onclick="showSec('home')">Home</a></li>
-                <li id="li-units"><a onclick="showSec('units')">My Units</a></li> <li id="li-results"><a onclick="showSec('results')">Results</a></li>
+                <li id="li-units"><a onclick="showSec('units')">My Units</a></li>
+                <li id="li-results"><a onclick="showSec('results')">Results</a></li>
                 <li id="li-fees"><a onclick="showSec('fees')">Finance</a></li>
             </ul>
         </div>
@@ -68,7 +71,7 @@
 
         <section id="units" class="card">
             <h2>Registered Units</h2>
-            <p>Below are the units assigned to your course.</p>
+            <p>Units currently assigned to your course.</p>
             <table>
                 <thead>
                     <tr>
@@ -76,8 +79,7 @@
                         <th>Unit Name</th>
                     </tr>
                 </thead>
-                <tbody id="unitsBody">
-                    </tbody>
+                <tbody id="unitsBody"></tbody>
             </table>
         </section>
 
@@ -99,55 +101,58 @@
     </main>
 
     <script>
+        // 1. Authentication Check
         const currentUserEmail = localStorage.getItem('currentUserEmail');
         const isLoggedIn = localStorage.getItem('isLoggedIn');
 
         if (!isLoggedIn || !currentUserEmail) {
-            window.location.href = "portal.html";
+            window.location.href = "index.html"; // Ensure this matches your login filename
         }
 
         function loadStudentData() {
+            // Fetch Student from DB
             const allStudents = JSON.parse(localStorage.getItem('db_students')) || [];
-            const student = allStudents.find(s => s.email === currentUserEmail);
+            const student = allStudents.find(s => s.email.toLowerCase() === currentUserEmail.toLowerCase());
 
             if (!student) {
-                alert("Student data not found!");
+                alert("Student profile not found!");
                 logout();
                 return;
             }
 
+            // --- Update UI Text ---
             document.getElementById('userNameDisplay').innerText = student.name;
             document.getElementById('userInitial').innerText = student.name.substring(0,2).toUpperCase();
             document.getElementById('welcomeMsg').innerText = `Welcome back, ${student.name.split(' ')[0]}!`;
-            
             document.getElementById('p-reg').innerText = student.reg;
             document.getElementById('p-email').innerText = student.email;
-            document.getElementById('p-course').innerText = student.course || "General Studies";
+            document.getElementById('p-course').innerText = student.course || "Not Assigned";
 
-            // LOAD UNITS
+            // --- Load Units ---
             const allUnits = JSON.parse(localStorage.getItem('db_units')) || [];
             const unitsBody = document.getElementById('unitsBody');
             
-            // Filter units by the student's course name
-            const myUnits = allUnits.filter(u => u.courseName === student.course);
+            // Clean matching: Remove extra spaces and ignore case
+            const myCourse = (student.course || "").trim().toLowerCase();
+            const myUnits = allUnits.filter(u => u.courseName.trim().toLowerCase() === myCourse);
             
             unitsBody.innerHTML = "";
             if(myUnits.length === 0) {
-                unitsBody.innerHTML = "<tr><td colspan='2' style='text-align:center;'>No units registered for this course.</td></tr>";
+                unitsBody.innerHTML = `<tr><td colspan="2" class="empty-msg">No units found for course: ${student.course}</td></tr>`;
             } else {
                 myUnits.forEach(u => {
                     unitsBody.innerHTML += `<tr><td>${u.code}</td><td>${u.name}</td></tr>`;
                 });
             }
 
-            // LOAD MARKS
+            // --- Load Marks ---
             const marks = JSON.parse(localStorage.getItem('db_marks')) || [];
             const myMarks = marks.filter(m => m.reg === student.reg);
             const marksBody = document.getElementById('marksBody');
             
             marksBody.innerHTML = "";
             if(myMarks.length === 0) {
-                marksBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No results published yet.</td></tr>";
+                marksBody.innerHTML = `<tr><td colspan="3" class="empty-msg">No results available yet.</td></tr>`;
             } else {
                 myMarks.forEach(m => {
                     const grade = getGradeLabel(m.score);
@@ -155,15 +160,16 @@
                 });
             }
 
-            // LOAD FEES
+            // --- Load Fees ---
             const paid = parseFloat(student.fees) || 0; 
-            const totalFee = 50000; 
+            const totalFee = 50000; // Standard Example Fee
             const balance = totalFee - paid;
 
             document.getElementById('paidAmount').innerText = `KES ${paid.toLocaleString()}`;
             document.getElementById('balanceAmount').innerText = `KES ${balance.toLocaleString()}`;
         }
 
+        // Helper: Calculate Grades
         function getGradeLabel(score) {
             if (score >= 70) return 'A';
             if (score >= 60) return 'B';
@@ -172,20 +178,24 @@
             return 'E';
         }
 
+        // Navigation Control
         function showSec(id) {
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+            
             document.getElementById(id).classList.add('active');
             document.getElementById('li-' + id).classList.add('active');
         }
 
+        // Clear session
         function logout() {
             localStorage.removeItem("isLoggedIn");
             localStorage.removeItem("currentUserEmail");
             localStorage.removeItem("user_role");
-            window.location.href = "portal.html";
+            window.location.href = "index.html"; 
         }
 
+        // Boot system
         window.onload = loadStudentData;
     </script>
 </body>
