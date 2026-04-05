@@ -74,7 +74,6 @@
 let currentTab = 'dashboard';
 const SEMESTER_FEE = 50000;
 
-// Mobile toggle
 document.getElementById('menuBtn').onclick = (e) => {
     e.stopPropagation();
     const sidebar = document.getElementById('sidebar');
@@ -287,6 +286,10 @@ function renderTable(tab) {
     }
 }
 
+/** * UPDATED FUNCTION:
+ * Forces a 3-column layout for the top cards
+ * Forces the Fee card to span 3 columns on the next row
+ */
 function renderDashboard() {
     const s = (JSON.parse(localStorage.getItem('db_students')) || []).length;
     const c = (JSON.parse(localStorage.getItem('db_courses')) || []).length;
@@ -296,7 +299,7 @@ function renderDashboard() {
     const totalFees = Object.values(feeData).reduce((a, b) => a + b, 0);
 
     document.getElementById('tableArea').innerHTML = `
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
             <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
                 <h3>${s}</h3>
                 <p>Students Registered</p>
@@ -309,9 +312,9 @@ function renderDashboard() {
                 <h3>${u}</h3>
                 <p>Units Defined</p>
             </div>
-            <div style="background:#605ca8; color:white; padding:20px; border-radius:3px;">
-                <h3>KES ${totalFees.toLocaleString()}</h3>
-                <p>Total Fees Collected</p>
+            <div style="grid-column: span 3; background:#605ca8; color:white; padding:30px; border-radius:3px; text-align: center;">
+                <h2 style="margin: 0; font-size: 32px;">KES ${totalFees.toLocaleString()}</h2>
+                <p style="margin: 10px 0 0; font-size: 16px; text-transform: uppercase; font-weight: bold;">Total Fees Collected</p>
             </div>
         </div>
     `;
@@ -319,7 +322,6 @@ function renderDashboard() {
 
 function resetSystem() { if(confirm("Clear system data?")) { localStorage.clear(); location.reload(); } }
 
-// Run on load
 window.onload = renderDashboard;
 </script>
 </body>
