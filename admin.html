@@ -34,7 +34,14 @@
         th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
         .grade-badge { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 12px; }
-        @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.mobile-open { transform: translateX(0); } .content { margin-left: 0 !important; } }
+        
+        /* Mobile specific adjustments */
+        @media (max-width: 768px) { 
+            .sidebar { transform: translateX(-100%); } 
+            .sidebar.mobile-open { transform: translateX(0); } 
+            .content { margin-left: 0 !important; } 
+            .dashboard-grid { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -286,10 +293,6 @@ function renderTable(tab) {
     }
 }
 
-/** * UPDATED FUNCTION:
- * Forces a 3-column layout for the top cards
- * Forces the Fee card to span 3 columns on the next row
- */
 function renderDashboard() {
     const s = (JSON.parse(localStorage.getItem('db_students')) || []).length;
     const c = (JSON.parse(localStorage.getItem('db_courses')) || []).length;
@@ -298,24 +301,32 @@ function renderDashboard() {
     const feeData = JSON.parse(localStorage.getItem('db_fees')) || {};
     const totalFees = Object.values(feeData).reduce((a, b) => a + b, 0);
 
+    // Forces a physical layout separation using a Flex-Column container
     document.getElementById('tableArea').innerHTML = `
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
-            <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
-                <h3>${s}</h3>
-                <p>Students Registered</p>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
+                    <h3 style="margin:0; font-size: 24px;">${s}</h3>
+                    <p style="margin:5px 0 0;">Students Registered</p>
+                </div>
+                <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
+                    <h3 style="margin:0; font-size: 24px;">${c}</h3>
+                    <p style="margin:5px 0 0;">Courses Available</p>
+                </div>
+                <div style="background:#f39c12; color:white; padding:20px; border-radius:3px;">
+                    <h3 style="margin:0; font-size: 24px;">${u}</h3>
+                    <p style="margin:5px 0 0;">Units Defined</p>
+                </div>
             </div>
-            <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
-                <h3>${c}</h3>
-                <p>Courses Available</p>
+
+            <div style="background:#605ca8; color:white; padding:30px; border-radius:3px; text-align: center;">
+                <h2 style="margin: 0; font-size: 36px;">KES ${totalFees.toLocaleString()}</h2>
+                <p style="margin: 10px 0 0; font-size: 18px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">
+                    Total Fees Collected
+                </p>
             </div>
-            <div style="background:#f39c12; color:white; padding:20px; border-radius:3px;">
-                <h3>${u}</h3>
-                <p>Units Defined</p>
-            </div>
-            <div style="grid-column: span 3; background:#605ca8; color:white; padding:30px; border-radius:3px; text-align: center;">
-                <h2 style="margin: 0; font-size: 32px;">KES ${totalFees.toLocaleString()}</h2>
-                <p style="margin: 10px 0 0; font-size: 16px; text-transform: uppercase; font-weight: bold;">Total Fees Collected</p>
-            </div>
+
         </div>
     `;
 }
