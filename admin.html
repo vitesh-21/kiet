@@ -39,10 +39,7 @@
             z-index: 1000;
         }
 
-        /* This is the magic class that hides the sidebar */
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
+        .sidebar.collapsed { transform: translateX(-100%); }
 
         .brand {
             background-color: #1a2226;
@@ -76,6 +73,7 @@
             text-decoration: none;
             border-left: 3px solid transparent;
             cursor: pointer;
+            transition: 0.2s;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -94,10 +92,7 @@
             transition: margin-left 0.3s ease;
         }
 
-        /* When sidebar is collapsed, content takes full width */
-        .content.expanded {
-            margin-left: 0;
-        }
+        .content.expanded { margin-left: 0; }
 
         .top-nav {
             background-color: var(--topbar-bg);
@@ -113,7 +108,15 @@
 
         .container { padding: 20px; }
 
-        /* Stats Cards */
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-top: 3px solid #d2d6de;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            margin-top: 10px;
+        }
+
+        /* Dashboard Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -132,32 +135,12 @@
 
         .bg-cyan { background: #00c0ef; }
         .bg-green { background: #00a65a; }
+        .bg-orange { background: #f39c12; }
         .bg-blue { background: #3c8dbc; }
 
-        .info-box {
-            background: white;
-            padding: 20px;
-            border-top: 3px solid #d2d6de;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-        }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn { background: #00a65a; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-        }
-
-        .btn {
-            background: #00a65a;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Mobile View */
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.mobile-open { transform: translateX(0); }
@@ -178,69 +161,39 @@
         </div>
 
         <div class="nav-label">MAIN NAVIGATION</div>
-        <a class="nav-item active" onclick="navigate('dashboard')"><i class="fa fa-dashboard"></i> Dashboard</a>
-        <a class="nav-item" onclick="navigate('students')"><i class="fa fa-users"></i> Students List</a>
-        
+        <a class="nav-item active" data-page="dashboard"><i class="fa fa-dashboard"></i> Dashboard</a>
+        <a class="nav-item" data-page="students"><i class="fa fa-users"></i> Students</a>
+        <a class="nav-item" data-page="courses"><i class="fa fa-graduation-cap"></i> Courses</a>
+        <a class="nav-item" data-page="units"><i class="fa fa-book"></i> Units</a>
+        <a class="nav-item" data-page="attendance"><i class="fa fa-calendar-check"></i> Attendance</a>
+        <a class="nav-item" data-page="marks"><i class="fa fa-poll"></i> Marks</a>
+        <a class="nav-item" data-page="fees"><i class="fa fa-money-bill"></i> Fees</a>
+
         <div class="nav-label">ACTIONS</div>
-        <a class="nav-item" onclick="navigate('register')"><i class="fa fa-plus"></i> Register Student</a>
-        <a class="nav-item" onclick="clearAllData()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset System</a>
+        <a class="nav-item" data-page="register"><i class="fa fa-plus-circle"></i> Register Student</a>
+        <a class="nav-item" onclick="clearData()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset System</a>
     </div>
 
     <div class="content" id="content">
         <nav class="top-nav">
             <div style="display: flex; align-items: center;">
                 <i class="fa fa-bars menu-toggle" id="menuBtn"></i>
-                <span style="margin-left:15px;">Student Management System</span>
+                <span style="margin-left:15px;">Student Information System</span>
             </div>
             <div>Admin <i class="fa fa-user-shield"></i></div>
         </nav>
 
-        <div class="container">
-            
-            <div id="page-dashboard" class="page">
-                <h2>Dashboard Overview</h2>
-                <div class="stats-grid">
-                    <div class="stat-card bg-cyan">
-                        <div><h3 id="count-display">0</h3><p>STUDENTS</p></div>
-                        <i class="fa fa-users fa-3x" style="opacity:0.3"></i>
-                    </div>
-                    <div class="stat-card bg-green">
-                        <div><h3>15</h3><p>COURSES</p></div>
-                        <i class="fa fa-book fa-3x" style="opacity:0.3"></i>
-                    </div>
-                    <div class="stat-card bg-blue">
-                        <div><h3 id="fee-display">KES 0</h3><p>TOTAL FEES</p></div>
-                        <i class="fa fa-money-bill fa-3x" style="opacity:0.3"></i>
-                    </div>
-                </div>
+        <div class="container" id="page-container">
             </div>
-
-            <div id="page-register" class="page" style="display:none;">
-                <h2>Register New Student</h2>
-                <div class="info-box">
-                    <label>Student Name</label>
-                    <input type="text" id="stuName" placeholder="Enter Full Name">
-                    <label>Fee Balance (KES)</label>
-                    <input type="number" id="stuFee" placeholder="Enter Amount">
-                    <button class="btn" onclick="saveStudent()">Register Student</button>
-                </div>
-            </div>
-
-            <div id="page-students" class="page" style="display:none;">
-                <h2>Student Records</h2>
-                <div class="info-box" id="table-container">
-                    </div>
-            </div>
-
-        </div>
     </div>
 
     <script>
         const sidebar = document.getElementById('sidebar');
         const content = document.getElementById('content');
         const menuBtn = document.getElementById('menuBtn');
+        const pageContainer = document.getElementById('page-container');
 
-        // --- SIDEBAR TOGGLE ---
+        // --- 1. SIDEBAR TOGGLE ---
         menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (window.innerWidth > 768) {
@@ -251,83 +204,106 @@
             }
         });
 
-        // Close sidebar on mobile when clicking outside
         document.addEventListener('click', () => {
             sidebar.classList.remove('mobile-open');
         });
 
-        // --- NAVIGATION ---
-        function navigate(pageId) {
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            // Show selected page
-            document.getElementById('page-' + pageId).style.display = 'block';
-            
-            // Update active menu class
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+        // --- 2. NAVIGATION LOGIC (Universal) ---
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                const page = this.getAttribute('data-page');
+                if(!page) return;
 
-            if(pageId === 'dashboard') updateDashboard();
-            if(pageId === 'students') renderTable();
+                // Update Active Class
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+
+                renderPage(page);
+            });
+        });
+
+        // --- 3. PAGE RENDERER ---
+        function renderPage(pageId) {
+            let html = "";
+
+            switch(pageId) {
+                case 'dashboard':
+                    const students = JSON.parse(localStorage.getItem('sys_students')) || [];
+                    const totalFees = students.reduce((sum, s) => sum + s.fee, 0);
+                    html = `
+                        <h2>Overview Dashboard</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card bg-cyan"><div><h3>${students.length}</h3><p>TOTAL STUDENTS</p></div><i class="fa fa-users fa-3x"></i></div>
+                            <div class="stat-card bg-green"><div><h3>10</h3><p>ACTIVE COURSES</p></div><i class="fa fa-graduation-cap fa-3x"></i></div>
+                            <div class="stat-card bg-orange"><div><h3>52</h3><p>UNITS</p></div><i class="fa fa-file-lines fa-3x"></i></div>
+                            <div class="stat-card bg-blue"><div><h3>KES ${totalFees.toLocaleString()}</h3><p>FEES COLLECTED</p></div><i class="fa fa-money-check-dollar fa-3x"></i></div>
+                        </div>
+                        <div class="info-box"><h4>Quick Stats</h4><p>System is running on Local Storage mode.</p></div>
+                    `;
+                    break;
+
+                case 'students':
+                    const list = JSON.parse(localStorage.getItem('sys_students')) || [];
+                    html = `<h2>Student Directory</h2><div class="info-box">`;
+                    if(list.length === 0) {
+                        html += `<p>No students found.</p>`;
+                    } else {
+                        html += `<table style="width:100%; border-collapse:collapse;">
+                            <tr style="background:#eee; text-align:left;"><th style="padding:10px;">Name</th><th style="padding:10px;">Fees Paid</th></tr>`;
+                        list.forEach(s => {
+                            html += `<tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;">${s.name}</td><td style="padding:10px;">KES ${s.fee.toLocaleString()}</td></tr>`;
+                        });
+                        html += `</table>`;
+                    }
+                    html += `</div>`;
+                    break;
+
+                case 'register':
+                    html = `
+                        <h2>Register New Student</h2>
+                        <div class="info-box">
+                            <label>Full Name</label><input type="text" id="regName" placeholder="Enter student name">
+                            <label>Fee Deposit (KES)</label><input type="number" id="regFee" placeholder="Enter amount">
+                            <button class="btn" onclick="saveStudent()">Register Student</button>
+                        </div>
+                    `;
+                    break;
+
+                default:
+                    // This handles Courses, Units, Marks, etc.
+                    html = `<h2>${pageId.toUpperCase()}</h2><div class="info-box"><p>The <strong>${pageId}</strong> module is currently under development.</p></div>`;
+            }
+
+            pageContainer.innerHTML = html;
         }
 
-        // --- DATA LOGIC ---
+        // --- 4. DATA LOGIC ---
         function saveStudent() {
-            const name = document.getElementById('stuName').value;
-            const fee = document.getElementById('stuFee').value;
+            const name = document.getElementById('regName').value;
+            const fee = document.getElementById('regFee').value;
 
             if(!name || !fee) return alert("Please fill in all fields");
 
-            const students = JSON.parse(localStorage.getItem('my_students')) || [];
+            const students = JSON.parse(localStorage.getItem('sys_students')) || [];
             students.push({ name, fee: parseFloat(fee) });
-            localStorage.setItem('my_students', JSON.stringify(students));
+            localStorage.setItem('sys_students', JSON.stringify(students));
 
-            alert("Student added!");
-            document.getElementById('stuName').value = "";
-            document.getElementById('stuFee').value = "";
-            navigate('dashboard');
+            alert("Student Registered!");
+            renderPage('dashboard');
+            // Reset active link to dashboard
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            document.querySelector('[data-page="dashboard"]').classList.add('active');
         }
 
-        function updateDashboard() {
-            const students = JSON.parse(localStorage.getItem('my_students')) || [];
-            const totalFees = students.reduce((sum, s) => sum + s.fee, 0);
-
-            document.getElementById('count-display').innerText = students.length;
-            document.getElementById('fee-display').innerText = "KES " + totalFees.toLocaleString();
-        }
-
-        function renderTable() {
-            const students = JSON.parse(localStorage.getItem('my_students')) || [];
-            const container = document.getElementById('table-container');
-
-            if(students.length === 0) {
-                container.innerHTML = "No students registered.";
-                return;
-            }
-
-            let html = `<table style="width:100%; border-collapse: collapse;">
-                <tr style="background:#eee; text-align:left;">
-                    <th style="padding:10px;">Name</th><th style="padding:10px;">Fee</th>
-                </tr>`;
-            students.forEach(s => {
-                html += `<tr style="border-bottom:1px solid #ddd;">
-                    <td style="padding:10px;">${s.name}</td>
-                    <td style="padding:10px;">KES ${s.fee.toLocaleString()}</td>
-                </tr>`;
-            });
-            html += `</table>`;
-            container.innerHTML = html;
-        }
-
-        function clearAllData() {
-            if(confirm("Wipe all data? This cannot be undone.")) {
-                localStorage.removeItem('my_students');
+        function clearData() {
+            if(confirm("Wipe all data?")) {
+                localStorage.removeItem('sys_students');
                 location.reload();
             }
         }
 
-        // Load initial dashboard data
-        updateDashboard();
+        // Initialize first view
+        renderPage('dashboard');
     </script>
 </body>
 </html>
