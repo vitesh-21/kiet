@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Sign Up</title>
-
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -71,7 +70,6 @@
     }
 </style>
 </head>
-
 <body>
 
 <div class="box">
@@ -89,12 +87,10 @@
 
         <input type="password" id="password" placeholder="Password" required>
 
-        <!-- Dynamic Courses -->
         <select id="course" required>
             <option value="" disabled selected>Select Course</option>
         </select>
 
-        <!-- Unit Preview -->
         <div id="unitPreview">Units will appear here...</div>
 
         <select id="year" required>
@@ -115,34 +111,15 @@
 </div>
 
 <script>
-
-// 🔥 DEMO ADMIN DATA (runs once if empty)
-if (!localStorage.getItem('courses')) {
-    localStorage.setItem('courses', JSON.stringify([
-        {
-            name: "Information Technology",
-            units: ["Web Development", "Networking", "Database Systems"]
-        },
-        {
-            name: "Computer Science",
-            units: ["Data Structures", "Algorithms", "Operating Systems"]
-        },
-        {
-            name: "Cyber Security",
-            units: ["Ethical Hacking", "Network Security", "Cryptography"]
-        }
-    ]));
-}
-
 const form = document.getElementById('signupForm');
 const messageDiv = document.getElementById('message');
 const courseSelect = document.getElementById('course');
 const unitPreview = document.getElementById('unitPreview');
 
-// ✅ Load Courses
+// Load courses from localStorage (from Admin dashboard)
 function loadCourses() {
     let courses = JSON.parse(localStorage.getItem('courses') || '[]');
-
+    courseSelect.innerHTML = '<option value="" disabled selected>Select Course</option>';
     courses.forEach(course => {
         let option = document.createElement('option');
         option.value = course.name;
@@ -150,20 +127,20 @@ function loadCourses() {
         courseSelect.appendChild(option);
     });
 }
-
 loadCourses();
 
-// ✅ Show Units When Course Selected
+// Show units dynamically when course is selected
 courseSelect.addEventListener('change', function(){
     let courses = JSON.parse(localStorage.getItem('courses') || '[]');
     let selected = courses.find(c => c.name === this.value);
-
     if(selected){
         unitPreview.innerHTML = "<b>Units:</b> " + selected.units.join(", ");
+    } else {
+        unitPreview.innerHTML = "Units will appear here...";
     }
 });
 
-// ✅ Form Submit
+// Form submission
 form.addEventListener('submit', function(e){
     e.preventDefault();
 
@@ -180,11 +157,13 @@ form.addEventListener('submit', function(e){
         return;
     }
 
-    let courses = JSON.parse(localStorage.getItem('courses') || '[]');
-    let selectedCourse = courses.find(c => c.name === course);
+    if(!validateEmail(email)){
+        showMessage('Invalid email address', 'error');
+        return;
+    }
 
-    if (!selectedCourse) {
-        showMessage('Course not found', 'error');
+    if(password.length < 6){
+        showMessage('Password must be at least 6 characters', 'error');
         return;
     }
 
@@ -195,6 +174,10 @@ form.addEventListener('submit', function(e){
         return;
     }
 
+    // Assign units automatically from selected course
+    let courses = JSON.parse(localStorage.getItem('courses') || '[]');
+    let selectedCourse = courses.find(c => c.name === course);
+
     students.push({
         full_name,
         reg_number,
@@ -203,23 +186,24 @@ form.addEventListener('submit', function(e){
         course,
         year,
         semester,
-        units: selectedCourse.units // 🔥 AUTO ASSIGNED
+        units: selectedCourse ? selectedCourse.units : []
     });
 
     localStorage.setItem('students', JSON.stringify(students));
-
-    showMessage('Student registered successfully with units!', 'success');
-
+    showMessage('Student registered successfully!', 'success');
     form.reset();
     unitPreview.innerHTML = "Units will appear here...";
 });
 
-// ✅ Message Function
 function showMessage(msg, type){
     messageDiv.innerHTML = `<div class="alert ${type}">${msg}</div>`;
     setTimeout(() => messageDiv.innerHTML = '', 4000);
 }
 
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.toLowerCase());
+}
 </script>
 
 </body>
