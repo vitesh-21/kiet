@@ -33,7 +33,7 @@
             min-height: 100vh;
             color: white;
             position: fixed;
-            left: 0; /* Starting position */
+            left: 0; 
             transition: all 0.3s ease;
             z-index: 1000;
         }
@@ -79,6 +79,7 @@
             text-decoration: none;
             border-left: 3px solid transparent;
             transition: 0.2s;
+            cursor: pointer;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -150,7 +151,29 @@
             border-top: 3px solid #d2d6de;
             padding: 20px;
             box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        .btn-save {
+            background-color: #00a65a;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-save:hover { background-color: #008d4c; }
 
         /* Mobile View Adjustment */
         @media (max-width: 768px) {
@@ -174,8 +197,8 @@
         </div>
 
         <div class="nav-label">MAIN NAVIGATION</div>
-        <a href="#" class="nav-item active"><i class="fa fa-dashboard"></i> Dashboard</a>
-        <a href="#" class="nav-item"><i class="fa fa-users"></i> Students</a>
+        <a href="#" class="nav-item active" data-section="dashboard"><i class="fa fa-dashboard"></i> Dashboard</a>
+        <a href="#" class="nav-item" data-section="students"><i class="fa fa-users"></i> Students</a>
         <a href="#" class="nav-item"><i class="fa fa-graduation-cap"></i> Courses</a>
         <a href="#" class="nav-item"><i class="fa fa-book"></i> Units</a>
         <a href="#" class="nav-item"><i class="fa fa-calendar-check"></i> Attendance</a>
@@ -183,8 +206,8 @@
         <a href="#" class="nav-item"><i class="fa fa-money-bill"></i> Fees</a>
 
         <div class="nav-label">ACTIONS</div>
-        <a href="#" class="nav-item"><i class="fa fa-plus-circle"></i> Register Student</a>
-        <a href="#" class="nav-item"><i class="fa fa-sign-out"></i> Logout</a>
+        <a href="#" class="nav-item" data-section="register"><i class="fa fa-plus-circle"></i> Register Student</a>
+        <a href="#" class="nav-item" onclick="clearData()"><i class="fa fa-trash"></i> Reset System</a>
     </div>
 
     <div class="content" id="mainContent">
@@ -197,61 +220,188 @@
         </nav>
         
         <div class="container">
-            <h2>Overview Dashboard</h2>
+            <div id="section-dashboard" class="page-section">
+                <h2>Overview Dashboard</h2>
 
-            <div class="stats-grid">
-                <div class="stat-card bg-cyan">
-                    <div><h3>10</h3><p>TOTAL STUDENTS</p></div>
-                    <i class="fa fa-users"></i>
+                <div class="stats-grid">
+                    <div class="stat-card bg-cyan">
+                        <div><h3 id="display-student-count">0</h3><p>TOTAL STUDENTS</p></div>
+                        <i class="fa fa-users"></i>
+                    </div>
+
+                    <div class="stat-card bg-green">
+                        <div><h3>10</h3><p>ACTIVE COURSES</p></div>
+                        <i class="fa fa-graduation-cap"></i>
+                    </div>
+
+                    <div class="stat-card bg-orange">
+                        <div><h3>52</h3><p>REGISTERED UNITS</p></div>
+                        <i class="fa fa-file-lines"></i>
+                    </div>
+
+                    <div class="stat-card bg-blue fees-card">
+                        <div><h3 id="display-fees-total">KES 0</h3><p>TOTAL FEES OWED</p></div>
+                        <i class="fa fa-money-check-dollar"></i>
+                    </div>
                 </div>
 
-                <div class="stat-card bg-green">
-                    <div><h3>10</h3><p>ACTIVE COURSES</p></div>
-                    <i class="fa fa-graduation-cap"></i>
-                </div>
-
-                <div class="stat-card bg-orange">
-                    <div><h3>52</h3><p>REGISTERED UNITS</p></div>
-                    <i class="fa fa-file-lines"></i>
-                </div>
-
-                <div class="stat-card bg-blue fees-card">
-                    <div><h3>KES 288,110</h3><p>TOTAL FEES OWED</p></div>
-                    <i class="fa fa-money-check-dollar"></i>
+                <div class="info-box">
+                    <h4>Quick Statistics</h4>
+                    <p>The counts above reflect all records currently stored in your <strong>Local Browser Storage</strong>.</p>
                 </div>
             </div>
 
-            <div class="info-box">
-                <h4>Quick Statistics</h4>
-                <p>The counts above reflect all records currently stored in your SQL database.</p>
+            <div id="section-register" class="page-section" style="display:none;">
+                <h2>Register New Student</h2>
+                <div class="info-box">
+                    <div class="form-group">
+                        <label>Student Full Name</label>
+                        <input type="text" id="inputName" placeholder="Enter full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Current Fee Balance (KES)</label>
+                        <input type="number" id="inputFee" placeholder="Enter balance amount">
+                    </div>
+                    <button class="btn-save" onclick="handleRegister()">Submit Registration</button>
+                </div>
             </div>
+
+            <div id="section-students" class="page-section" style="display:none;">
+                <h2>Student Directory</h2>
+                <div class="info-box">
+                    <div id="studentList">No students registered yet.</div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
+    /* --- SIDEBAR TOGGLE LOGIC --- */
     const toggleBtn = document.getElementById('toggleSidebar');
     const sidebar = document.getElementById('mySidebar');
     const content = document.getElementById('mainContent');
 
     toggleBtn.addEventListener('click', () => {
         const screenWidth = window.innerWidth;
-
         if (screenWidth > 768) {
-            // DESKTOP: Slide sidebar in/out
             if (sidebar.style.left === "0px" || sidebar.style.left === "") {
-                sidebar.style.left = "-230px"; // Hide sidebar
+                sidebar.style.left = "-230px";
                 content.style.marginLeft = "0px";
             } else {
-                sidebar.style.left = "0px"; // Show sidebar
+                sidebar.style.left = "0px";
                 content.style.marginLeft = "230px";
             }
         } else {
-            // MOBILE: Toggle overlay sidebar
             sidebar.classList.toggle('open');
         }
     });
 
-    // Optional: Close sidebar on mobile when clicking outside
+    /* --- PAGE NAVIGATION LOGIC --- */
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.page-section');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            const sectionId = this.getAttribute('data-section');
+            if (!sectionId) return; // Skip items without sections
+
+            e.preventDefault();
+            
+            // Update Active Link UI
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+
+            // Switch Sections
+            sections.forEach(sec => sec.style.display = 'none');
+            document.getElementById('section-' + sectionId).style.display = 'block';
+
+            if(sectionId === 'students') renderStudentList();
+            if(sectionId === 'dashboard') updateDashboard();
+            
+            // Close sidebar on mobile after clicking
+            if (window.innerWidth <= 768) sidebar.classList.remove('open');
+        });
+    });
+
+    /* --- DATA MANAGEMENT (JAVASCRIPT + LOCALSTORAGE) --- */
+    
+    // Initial Load
+    window.onload = updateDashboard;
+
+    function handleRegister() {
+        const nameInput = document.getElementById('inputName');
+        const feeInput = document.getElementById('inputFee');
+
+        if(nameInput.value === "" || feeInput.value === "") {
+            alert("Please fill in both fields!");
+            return;
+        }
+
+        const newStudent = {
+            name: nameInput.value,
+            fee: parseFloat(feeInput.value)
+        };
+
+        // Get data from storage
+        let students = JSON.parse(localStorage.getItem('diploma_students')) || [];
+        
+        // Add new student
+        students.push(newStudent);
+        
+        // Save back to storage
+        localStorage.setItem('diploma_students', JSON.stringify(students));
+
+        // Clear and notify
+        nameInput.value = "";
+        feeInput.value = "";
+        alert("Student Registered Successfully!");
+        
+        // Redirect to dashboard
+        document.querySelector('[data-section="dashboard"]').click();
+    }
+
+    function updateDashboard() {
+        const students = JSON.parse(localStorage.getItem('diploma_students')) || [];
+        
+        // Calculate totals
+        const totalCount = students.length;
+        const totalFees = students.reduce((sum, s) => sum + s.fee, 0);
+
+        // Update UI
+        document.getElementById('display-student-count').innerText = totalCount;
+        document.getElementById('display-fees-total').innerText = "KES " + totalFees.toLocaleString();
+    }
+
+    function renderStudentList() {
+        const students = JSON.parse(localStorage.getItem('diploma_students')) || [];
+        const listDiv = document.getElementById('studentList');
+
+        if(students.length === 0) {
+            listDiv.innerHTML = "No students registered yet.";
+            return;
+        }
+
+        let html = '<table style="width:100%; border-collapse: collapse;">';
+        html += '<tr style="background:#eee; text-align:left;"><th style="padding:10px;">Name</th><th style="padding:10px;">Fee Balance</th></tr>';
+        
+        students.forEach(s => {
+            html += `<tr style="border-bottom:1px solid #ddd;"><td style="padding:10px;">${s.name}</td><td style="padding:10px;">KES ${s.fee.toLocaleString()}</td></tr>`;
+        });
+        
+        html += '</table>';
+        listDiv.innerHTML = html;
+    }
+
+    function clearData() {
+        if(confirm("Are you sure you want to delete all student records?")) {
+            localStorage.removeItem('diploma_students');
+            updateDashboard();
+            alert("System reset complete.");
+        }
+    }
+
+    // Close sidebar on mobile when clicking outside
     document.addEventListener('click', (e) => {
         if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && e.target !== toggleBtn) {
