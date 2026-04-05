@@ -122,9 +122,8 @@
 </div>
 
 <script>
-    // 1. Check for the Admin database. If it doesn't exist, create it immediately.
+    // 1. Initial Admin setup
     let adminDB = JSON.parse(localStorage.getItem("db_admins"));
-
     if (!adminDB) {
         adminDB = [{ 
             email: "admin@gmail.com", 
@@ -135,13 +134,13 @@
         localStorage.setItem("db_admins", JSON.stringify(adminDB));
     }
 
-    // 2. Load the students registered from the Admin Dashboard
-    const studentDB = JSON.parse(localStorage.getItem("db_students")) || [];
-
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const email = document.getElementById('email').value.trim();
+        // Get fresh student data from Admin Dashboard
+        const studentDB = JSON.parse(localStorage.getItem("db_students")) || [];
+
+        const email = document.getElementById('email').value.trim().toLowerCase();
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
         const role = document.getElementById('role').value;
@@ -150,29 +149,34 @@
         let userFound = null;
 
         if (role === 'Admin') {
-            // Check Admin Array
-            userFound = adminDB.find(u => u.email === email && u.username === username && u.password === password);
+            userFound = adminDB.find(u => 
+                u.email.toLowerCase() === email && 
+                u.username === username && 
+                u.password === password
+            );
+            if(userFound) userFound.redirect = "admin.html";
         } else {
-            // Check Student Array
+            // Check specifically against the list created in admin.html
             userFound = studentDB.find(u => 
-                u.email === email && 
+                u.email.toLowerCase() === email && 
                 (u.name === username || u.reg === username) && 
                 u.password === password
             );
-            if(userFound) userFound.redirect = "portal.html";
+            
+            // ✅ CHANGE REDIRECT HERE
+            if(userFound) userFound.redirect = "portal.html"; 
         }
 
         if (userFound) {
-            // SAVE SESSION DATA
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("user_role", role);
             localStorage.setItem("currentUserEmail", email);
             localStorage.setItem("username", username);
 
-            // REDIRECT
-            window.location.href = userFound.redirect || "admin.html";
+            // Execute the redirect
+            window.location.href = userFound.redirect;
         } else {
-            errorBox.innerText = "Invalid credentials. Check your Email/Password.";
+            errorBox.innerText = "Invalid credentials. Only registered students can log in.";
             errorBox.style.display = "block";
         }
     });
