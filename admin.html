@@ -79,7 +79,7 @@
         </nav>
 
         <div class="container">
-            <h2 id="pageTitle">Dashboard</h2>
+            <h2 id="pageTitle">DASHBOARD</h2>
             
             <div id="addFormContainer" class="card" style="display:none;">
                 <div class="form-container" id="dynamicForm"></div>
@@ -165,8 +165,8 @@ function setupForm(tab) {
     else if(tab === 'units') {
         container.innerHTML = `
             <div class="form-row">
-                <div class="form-group"><label>Unit Name</label><input type="text" id="u_name" placeholder="Ex: Data Structures"></div>
-                <div class="form-group"><label>Unit Code</label><input type="text" id="u_code" placeholder="Ex: CS201"></div>
+                <div class="form-group"><label>Unit Name</label><input type="text" id="u_name" placeholder="Ex: Calculus I"></div>
+                <div class="form-group"><label>Unit Code</label><input type="text" id="u_code" placeholder="Ex: MATH101"></div>
             </div>
             <div class="form-row">
                 <div class="form-group"><label>Assign to Course</label>
@@ -175,8 +175,14 @@ function setupForm(tab) {
                 <div class="form-group"><label>Course ID</label>
                     <input type="text" id="u_course_id" readonly>
                 </div>
+                <div class="form-group"><label>Year</label>
+                    <select id="u_year"><option value="1">Year 1</option><option value="2">Year 2</option></select>
+                </div>
+                <div class="form-group"><label>Semester</label>
+                    <select id="u_sem"><option value="1">Sem 1</option><option value="2">Sem 2</option></select>
+                </div>
             </div>
-            <button class="btn-add" onclick="handleSave()">Add Unit</button>
+            <button class="btn-add" onclick="handleSave()">Add & Assign Unit</button>
         `;
         loadCoursesIntoDropdown('u_courseSelect');
     }
@@ -238,9 +244,11 @@ function handleSave() {
             name: document.getElementById('u_name').value,
             code: document.getElementById('u_code').value,
             assignedCourse: document.getElementById('u_courseSelect').value,
-            courseId: document.getElementById('u_course_id').value
+            courseId: document.getElementById('u_course_id').value,
+            year: document.getElementById('u_year').value,
+            sem: document.getElementById('u_sem').value
         };
-        if(!unit.name || !unit.courseId) return alert("Please fill unit details and assign a course!");
+        if(!unit.name || !unit.courseId) return alert("Please fill Unit Name and select a Course!");
         saveData('db_units', unit);
     }
     else {
@@ -278,8 +286,8 @@ function renderTable(tab) {
         data.forEach(item => { html += `<tr><td>${item.name}</td><td>${item.reg}</td><td>${item.courseName}</td><td>${item.courseId}</td><td>Y${item.year} S${item.sem}</td></tr>`; });
     }
     else if(tab === 'units') {
-        html += `<tr><th>Unit Name</th><th>Unit Code</th><th>Assigned Course</th><th>Course ID</th></tr>`;
-        data.forEach(item => { html += `<tr><td>${item.name}</td><td>${item.code}</td><td>${item.assignedCourse}</td><td>${item.courseId}</td></tr>`; });
+        html += `<tr><th>Unit Name</th><th>Unit Code</th><th>Course</th><th>Yr/Sem</th></tr>`;
+        data.forEach(item => { html += `<tr><td>${item.name}</td><td>${item.code}</td><td>${item.assignedCourse}</td><td>Y${item.year} S${item.sem}</td></tr>`; });
     }
     else {
         html += `<tr><th>Title</th><th>Details</th></tr>`;
