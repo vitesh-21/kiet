@@ -1,108 +1,118 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Student Sign Up</title>
+    <title>Admin Dashboard | Diploma System</title>
 
-<style>
+    
 
-    body {
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-        font-family: Arial, sans-serif;
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        background: #ecf0f5;
 
-        display: flex;
 
-        justify-content: center;
+    <style>
 
-        align-items: center;
+        :root {
 
-        min-height: 100vh;
+            --sidebar-bg: #222d32;
 
-        margin: 0;
+            --sidebar-hover: #1e282c;
 
-    }
+            --topbar-bg: #00a65a;
 
-    .box {
+            --main-bg: #ecf0f5;
 
-        background: white;
+            --text-gray: #b8c7ce;
 
-        padding: 30px;
+            --sidebar-width: 230px;
 
-        width: 400px;
+        }
 
-        border-radius: 8px;
 
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 
-    }
+        body { margin: 0; font-family: 'Source Sans Pro', sans-serif; background-color: var(--main-bg); display: flex; min-height: 100vh; }
 
-    h2 { text-align: center; color: #333; margin-bottom: 20px; }
 
-    input, select {
 
-        width: 100%;
+        /* --- SIDEBAR --- */
 
-        padding: 10px;
+        .sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); color: white; position: fixed; top: 0; left: 0; bottom: 0; transition: 0.3s; z-index: 1000; }
 
-        margin: 8px 0;
+        .sidebar.collapsed { transform: translateX(-100%); }
 
-        border: 1px solid #ccc;
+        .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; }
 
-        border-radius: 4px;
+        .nav-label { padding: 10px 20px; font-size: 12px; color: #4b646f; background: #1a2226; }
 
-        box-sizing: border-box;
+        .nav-item { display: flex; align-items: center; padding: 12px 20px; color: var(--text-gray); text-decoration: none; cursor: pointer; border-left: 3px solid transparent; }
 
-    }
+        .nav-item:hover, .nav-item.active { background: var(--sidebar-hover); color: #fff; border-left-color: #3c8dbc; }
 
-    button {
+        .nav-item i { margin-right: 10px; width: 20px; }
 
-        width: 100%;
 
-        padding: 12px;
 
-        background: #00a65a;
+        /* --- CONTENT --- */
 
-        border: none;
+        .content { margin-left: var(--sidebar-width); flex-grow: 1; transition: 0.3s; width: 100%; }
 
-        color: white;
+        .content.expanded { margin-left: 0; }
 
-        font-weight: bold;
+        .top-nav { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 20px; color: white; justify-content: space-between; }
 
-        cursor: pointer;
+        
 
-        border-radius: 4px;
+        .container { padding: 20px; }
 
-        margin-top: 10px;
+        .card { background: white; padding: 20px; border-top: 3px solid #d2d6de; box-shadow: 0 1px 1px rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-    }
+        
 
-    button:hover { background: #008d4c; }
+        /* Form Styling */
 
-    .alert {
+        .form-inline { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
 
-        margin-bottom: 15px;
+        .form-group { flex: 1; min-width: 200px; }
 
-        font-size: 14px;
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
 
-        padding: 10px;
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 2px; box-sizing: border-box; }
 
-        border-radius: 4px;
+        
 
-    }
+        .btn-add { background: #00a65a; color: white; border: none; padding: 9px 20px; cursor: pointer; font-weight: bold; border-radius: 2px; }
 
-    .alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .btn-add:hover { background: #008d4c; }
 
-    .alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-</style>
+
+        table { width: 100%; border-collapse: collapse; background: white; }
+
+        th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; }
+
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+
+
+
+        @media (max-width: 768px) {
+
+            .sidebar { transform: translateX(-100%); }
+
+            .sidebar.mobile-open { transform: translateX(0); }
+
+            .content { margin-left: 0 !important; }
+
+        }
+
+    </style>
 
 </head>
 
@@ -110,197 +120,313 @@
 
 
 
-<div class="box">
+    <div class="sidebar" id="sidebar">
 
-    <h2>Student Sign Up</h2>
+        <div class="brand">DIPLOMA ADMIN</div>
 
-    <div id="message"></div>
+        <div class="nav-label">MAIN NAVIGATION</div>
 
-    <form id="signupForm">
+        <a class="nav-item active" onclick="showTab('dashboard')"><i class="fa fa-dashboard"></i> Dashboard</a>
 
-        <input type="text" id="full_name" placeholder="Full Name" required>
+        <a class="nav-item" onclick="showTab('students')"><i class="fa fa-users"></i> Students</a>
 
-        <input type="text" id="reg_number" placeholder="Registration Number" required>
+        <a class="nav-item" onclick="showTab('courses')"><i class="fa fa-graduation-cap"></i> Courses</a>
 
-        <input type="email" id="email" placeholder="Email" required>
+        <a class="nav-item" onclick="showTab('units')"><i class="fa fa-book"></i> Units</a>
 
-        <input type="password" id="password" placeholder="Password" required>
+        <a class="nav-item" onclick="showTab('attendance')"><i class="fa fa-calendar-check"></i> Attendance</a>
 
-        
+        <a class="nav-item" onclick="showTab('marks')"><i class="fa fa-poll"></i> Marks</a>
 
-        <select id="course" required>
+        <a class="nav-item" onclick="showTab('fees')"><i class="fa fa-money-bill"></i> Fees</a>
 
-            <option value="" disabled selected>Select Your Course</option>
+        <div class="nav-label">ACTIONS</div>
 
-            <option value="Information Technology">Information Technology</option>
+        <a class="nav-item" onclick="resetSystem()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset All Data</a>
 
-            <option value="Computer Science">Computer Science</option>
+    </div>
 
-            <option value="Business Information Technology">Business Information Technology</option>
 
-            <option value="Cyber Security">Cyber Security</option>
 
-            <option value="Software Engineering">Software Engineering</option>
+    <div class="content" id="content">
 
-        </select>
+        <nav class="top-nav">
 
-        
+            <i class="fa fa-bars" style="cursor:pointer" id="menuBtn"></i>
 
-        <select id="year" required>
+            <span>System Manager</span>
 
-            <option value="" disabled selected>Select Year</option>
+            <div>Admin <i class="fa fa-circle" style="color:#4f4; font-size:10px"></i></div>
 
-            <option value="1">Year 1</option>
+        </nav>
 
-            <option value="2">Year 2</option>
 
-        </select>
 
-        
+        <div class="container">
 
-        <select id="semester" required>
+            <h2 id="pageTitle">Dashboard</h2>
 
-            <option value="" disabled selected>Select Semester</option>
+            
 
-            <option value="1">Semester 1</option>
+            <div id="addFormContainer" class="card" style="display:none;">
 
-            <option value="2">Semester 2</option>
+                <div class="form-inline">
 
-        </select>
+                    <div class="form-group">
 
-        
+                        <label id="label1">Name</label>
 
-        <button type="submit">Sign Up</button>
+                        <input type="text" id="input1" placeholder="">
 
-    </form>
+                    </div>
 
-</div>
+                    <div class="form-group">
 
+                        <label id="label2">Details</label>
 
+                        <input type="text" id="input2" placeholder="">
 
-<script>
+                    </div>
 
-const form = document.getElementById('signupForm');
+                    <button class="btn-add" onclick="handleSave()">Add Entry</button>
 
-const messageDiv = document.getElementById('message');
+                </div>
 
+            </div>
 
 
-form.addEventListener('submit', function(e){
 
-    e.preventDefault(); // prevent page reload
+            <div class="card">
 
+                <div id="tableArea">
 
+                    <p>Welcome! Click a tab to start managing data.</p>
 
-    // Get form values
+                </div>
 
-    const full_name = document.getElementById('full_name').value.trim();
+            </div>
 
-    const reg_number = document.getElementById('reg_number').value.trim();
+        </div>
 
-    const email = document.getElementById('email').value.trim();
+    </div>
 
-    const password = document.getElementById('password').value;
 
-    const course = document.getElementById('course').value;
 
-    const year = document.getElementById('year').value;
+    <script>
 
-    const semester = document.getElementById('semester').value;
+        let currentTab = 'dashboard';
 
+        const sidebar = document.getElementById('sidebar');
 
+        const content = document.getElementById('content');
 
-    // Basic validation
 
-    if (!full_name || !reg_number || !email || !password || !course || !year || !semester) {
 
-        showMessage('Please fill in all fields', 'error');
+        // Sidebar toggle
 
-        return;
+        document.getElementById('menuBtn').onclick = (e) => {
 
-    }
+            e.stopPropagation();
 
+            if(window.innerWidth > 768) {
 
+                sidebar.classList.toggle('collapsed');
 
-    if (!validateEmail(email)) {
+                content.classList.toggle('expanded');
 
-        showMessage('Invalid email address', 'error');
+            } else {
 
-        return;
+                sidebar.classList.toggle('mobile-open');
 
-    }
+            }
 
+        };
 
 
-    if (password.length < 6) {
 
-        showMessage('Password must be at least 6 characters', 'error');
+        function showTab(tab) {
 
-        return;
+            currentTab = tab;
 
-    }
+            document.getElementById('pageTitle').innerText = tab.toUpperCase();
 
+            
 
+            // Update Active Menu
 
-    // Save to localStorage (simulate registration)
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
-    let students = JSON.parse(localStorage.getItem('students') || '[]');
+            event.currentTarget.classList.add('active');
 
 
 
-    // Check duplicate registration number
+            const formBox = document.getElementById('addFormContainer');
 
-    if(students.some(s => s.reg_number === reg_number)){
+            
 
-        showMessage('Registration Number already exists!', 'error');
+            if(tab === 'dashboard') {
 
-        return;
+                formBox.style.display = 'none';
 
-    }
+                renderDashboard();
 
+            } else {
 
+                formBox.style.display = 'block';
 
-    students.push({ full_name, reg_number, email, password, course, year, semester });
+                setupForm(tab);
 
-    localStorage.setItem('students', JSON.stringify(students));
+                renderTable(tab);
 
+            }
 
+            if(window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
 
-    showMessage('Student registered successfully!', 'success');
+        }
 
 
 
-    // Reset form
+        function setupForm(tab) {
 
-    form.reset();
+            const l1 = document.getElementById('label1');
 
-});
+            const l2 = document.getElementById('label2');
 
+            const i1 = document.getElementById('input1');
 
+            const i2 = document.getElementById('input2');
 
-// Helper functions
 
-function showMessage(msg, type){
 
-    messageDiv.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+            // Reset inputs
 
-    setTimeout(() => messageDiv.innerHTML = '', 4000);
+            i1.value = ''; i2.value = '';
 
-}
 
 
+            // Customize labels based on tab
 
-function validateEmail(email) {
+            if(tab === 'students') { l1.innerText="Student Name"; l2.innerText="Admission No"; i1.placeholder="Ex: John Doe"; i2.placeholder="Ex: DIP/001"; }
 
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            else if(tab === 'courses') { l1.innerText="Course Title"; l2.innerText="Duration"; i1.placeholder="Ex: IT Diploma"; i2.placeholder="Ex: 2 Years"; }
 
-    return re.test(email.toLowerCase());
+            else if(tab === 'units') { l1.innerText="Unit Name"; l2.innerText="Unit Code"; i1.placeholder="Ex: Programming I"; i2.placeholder="Ex: ICT101"; }
 
-}
+            else if(tab === 'fees') { l1.innerText="Student Name"; l2.innerText="Amount Paid (KES)"; i1.placeholder="Ex: Jane Smith"; i2.placeholder="Ex: 5000"; }
 
-</script>
+            else { l1.innerText="Title"; l2.innerText="Description"; i1.placeholder="Enter name"; i2.placeholder="Enter detail"; }
 
+        }
 
+
+
+        function handleSave() {
+
+            const val1 = document.getElementById('input1').value;
+
+            const val2 = document.getElementById('input2').value;
+
+
+
+            if(!val1 || !val2) return alert("Please fill both fields!");
+
+
+
+            const storageKey = 'db_' + currentTab;
+
+            const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+            data.push({ col1: val1, col2: val2 });
+
+            localStorage.setItem(storageKey, JSON.stringify(data));
+
+
+
+            document.getElementById('input1').value = '';
+
+            document.getElementById('input2').value = '';
+
+            renderTable(currentTab);
+
+        }
+
+
+
+        function renderTable(tab) {
+
+            const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
+
+            const area = document.getElementById('tableArea');
+
+
+
+            if(data.length === 0) {
+
+                area.innerHTML = `<p>No records found for ${tab}. Use the form above to add some.</p>`;
+
+                return;
+
+            }
+
+
+
+            let html = `<table><tr><th>${document.getElementById('label1').innerText}</th><th>${document.getElementById('label2').innerText}</th></tr>`;
+
+            data.forEach(item => {
+
+                html += `<tr><td>${item.col1}</td><td>${item.col2}</td></tr>`;
+
+            });
+
+            html += `</table>`;
+
+            area.innerHTML = html;
+
+        }
+
+
+
+        function renderDashboard() {
+
+            const area = document.getElementById('tableArea');
+
+            area.innerHTML = `
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
+
+                    <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
+
+                        <h3>${(JSON.parse(localStorage.getItem('db_students')) || []).length}</h3><p>Students</p>
+
+                    </div>
+
+                    <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
+
+                        <h3>${(JSON.parse(localStorage.getItem('db_courses')) || []).length}</h3><p>Courses</p>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+
+        function resetSystem() {
+
+            if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); }
+
+        }
+
+
+
+        // Default view
+
+        renderDashboard();
+
+    </script>
 
 </body>
 
