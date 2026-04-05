@@ -212,222 +212,267 @@
 
 
 
-    <script>
-
-        let currentTab = 'dashboard';
-
-        const sidebar = document.getElementById('sidebar');
-
-        const content = document.getElementById('content');
-
-
-
-        // Sidebar toggle
-
-        document.getElementById('menuBtn').onclick = (e) => {
-
-            e.stopPropagation();
-
-            if(window.innerWidth > 768) {
-
-                sidebar.classList.toggle('collapsed');
-
-                content.classList.toggle('expanded');
-
-            } else {
-
-                sidebar.classList.toggle('mobile-open');
-
-            }
-
-        };
-
-
-
-        function showTab(tab) {
-
-            currentTab = tab;
-
-            document.getElementById('pageTitle').innerText = tab.toUpperCase();
-
-            
-
-            // Update Active Menu
-
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            event.currentTarget.classList.add('active');
-
-
-
-            const formBox = document.getElementById('addFormContainer');
-
-            
-
-            if(tab === 'dashboard') {
-
-                formBox.style.display = 'none';
-
-                renderDashboard();
-
-            } else {
-
-                formBox.style.display = 'block';
-
-                setupForm(tab);
-
-                renderTable(tab);
-
-            }
-
-            if(window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
-
-        }
-
-
-
-        function setupForm(tab) {
-
-            const l1 = document.getElementById('label1');
-
-            const l2 = document.getElementById('label2');
-
-            const i1 = document.getElementById('input1');
-
-            const i2 = document.getElementById('input2');
-
-
-
-            // Reset inputs
-
-            i1.value = ''; i2.value = '';
-
-
-
-            // Customize labels based on tab
-
-            if(tab === 'students') { l1.innerText="Student Name"; l2.innerText="Admission No"; i1.placeholder="Ex: John Doe"; i2.placeholder="Ex: DIP/001"; }
-
-            else if(tab === 'courses') { l1.innerText="Course Title"; l2.innerText="Duration"; i1.placeholder="Ex: IT Diploma"; i2.placeholder="Ex: 2 Years"; }
-
-            else if(tab === 'units') { l1.innerText="Unit Name"; l2.innerText="Unit Code"; i1.placeholder="Ex: Programming I"; i2.placeholder="Ex: ICT101"; }
-
-            else if(tab === 'fees') { l1.innerText="Student Name"; l2.innerText="Amount Paid (KES)"; i1.placeholder="Ex: Jane Smith"; i2.placeholder="Ex: 5000"; }
-
-            else { l1.innerText="Title"; l2.innerText="Description"; i1.placeholder="Enter name"; i2.placeholder="Enter detail"; }
-
-        }
-
-
-
-        function handleSave() {
-
-            const val1 = document.getElementById('input1').value;
-
-            const val2 = document.getElementById('input2').value;
-
-
-
-            if(!val1 || !val2) return alert("Please fill both fields!");
-
-
-
-            const storageKey = 'db_' + currentTab;
-
-            const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-
-            data.push({ col1: val1, col2: val2 });
-
-            localStorage.setItem(storageKey, JSON.stringify(data));
-
-
-
-            document.getElementById('input1').value = '';
-
-            document.getElementById('input2').value = '';
-
-            renderTable(currentTab);
-
-        }
-
-
-
-        function renderTable(tab) {
-
-            const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
-
-            const area = document.getElementById('tableArea');
-
-
-
-            if(data.length === 0) {
-
-                area.innerHTML = `<p>No records found for ${tab}. Use the form above to add some.</p>`;
-
-                return;
-
-            }
-
-
-
-            let html = `<table><tr><th>${document.getElementById('label1').innerText}</th><th>${document.getElementById('label2').innerText}</th></tr>`;
-
-            data.forEach(item => {
-
-                html += `<tr><td>${item.col1}</td><td>${item.col2}</td></tr>`;
-
-            });
-
-            html += `</table>`;
-
-            area.innerHTML = html;
-
-        }
-
-
-
-        function renderDashboard() {
-
-            const area = document.getElementById('tableArea');
-
-            area.innerHTML = `
-
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
-
-                    <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
-
-                        <h3>${(JSON.parse(localStorage.getItem('db_students')) || []).length}</h3><p>Students</p>
-
-                    </div>
-
-                    <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
-
-                        <h3>${(JSON.parse(localStorage.getItem('db_courses')) || []).length}</h3><p>Courses</p>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        }
-
-
-
-        function resetSystem() {
-
-            if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); }
-
-        }
-
-
-
-        // Default view
-
+   <script>
+
+let currentTab = 'dashboard';
+
+const sidebar = document.getElementById('sidebar');
+const content = document.getElementById('content');
+
+// Sidebar toggle
+document.getElementById('menuBtn').onclick = (e) => {
+    e.stopPropagation();
+    if(window.innerWidth > 768) {
+        sidebar.classList.toggle('collapsed');
+        content.classList.toggle('expanded');
+    } else {
+        sidebar.classList.toggle('mobile-open');
+    }
+};
+
+// SWITCH TABS
+function showTab(tab) {
+    currentTab = tab;
+    document.getElementById('pageTitle').innerText = tab.toUpperCase();
+
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    const formBox = document.getElementById('addFormContainer');
+
+    if(tab === 'dashboard') {
+        formBox.style.display = 'none';
         renderDashboard();
+    } else {
+        formBox.style.display = 'block';
+        setupForm(tab);
+        renderTable(tab);
+    }
 
-    </script>
+    if(window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
+}
 
+// SETUP FORM
+function setupForm(tab) {
+
+    const l1 = document.getElementById('label1');
+    const l2 = document.getElementById('label2');
+    const i1 = document.getElementById('input1');
+    const i2 = document.getElementById('input2');
+
+    i1.value = '';
+    i2.value = '';
+
+    // REMOVE OLD DROPDOWN IF EXISTS
+    const old = document.getElementById('courseSelect');
+    if(old) old.parentElement.remove();
+
+    if(tab === 'students') {
+
+        l1.innerText = "Student Name";
+        l2.innerText = "Admission No";
+        i1.placeholder = "Ex: John Doe";
+        i2.placeholder = "Ex: DIP/001";
+
+        // ADD COURSE DROPDOWN
+        const div = document.createElement('div');
+        div.className = "form-group";
+        div.innerHTML = `
+            <label>Course</label>
+            <select id="courseSelect"></select>
+        `;
+
+        document.querySelector('.form-inline').insertBefore(div, document.querySelector('.btn-add'));
+
+        loadCoursesIntoDropdown();
+    }
+
+    else if(tab === 'courses') {
+        l1.innerText="Course Title";
+        l2.innerText="Duration";
+        i1.placeholder="Ex: IT Diploma";
+        i2.placeholder="Ex: 2 Years";
+    }
+
+    else if(tab === 'units') {
+        l1.innerText="Unit Name";
+        l2.innerText="Unit Code";
+        i1.placeholder="Ex: Programming I";
+        i2.placeholder="Ex: ICT101";
+    }
+
+    else if(tab === 'fees') {
+        l1.innerText="Student Name";
+        l2.innerText="Amount Paid (KES)";
+        i1.placeholder="Ex: Jane Smith";
+        i2.placeholder="Ex: 5000";
+    }
+
+    else {
+        l1.innerText="Title";
+        l2.innerText="Description";
+    }
+}
+
+// LOAD COURSES INTO DROPDOWN
+function loadCoursesIntoDropdown() {
+    const courses = JSON.parse(localStorage.getItem('db_courses')) || [];
+    const select = document.getElementById('courseSelect');
+
+    if(!select) return;
+
+    select.innerHTML = '<option value="">Select Course</option>';
+
+    courses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course.col1;
+        option.textContent = course.col1;
+        select.appendChild(option);
+    });
+}
+
+// SAVE DATA
+function handleSave() {
+
+    // STUDENTS SPECIAL LOGIC
+    if(currentTab === 'students'){
+
+        const name = document.getElementById('input1').value;
+        const admission = document.getElementById('input2').value;
+        const course = document.getElementById('courseSelect').value;
+
+        if(!name || !admission || !course){
+            alert("Fill all fields!");
+            return;
+        }
+
+        const students = JSON.parse(localStorage.getItem('db_students')) || [];
+        const units = JSON.parse(localStorage.getItem('db_units')) || [];
+
+        students.push({
+            name: name,
+            admission: admission,
+            course: course,
+            units: units.map(u => u.col1)
+        });
+
+        localStorage.setItem('db_students', JSON.stringify(students));
+
+        document.getElementById('input1').value = '';
+        document.getElementById('input2').value = '';
+
+        renderTable('students');
+        return;
+    }
+
+    // DEFAULT LOGIC
+    const val1 = document.getElementById('input1').value;
+    const val2 = document.getElementById('input2').value;
+
+    if(!val1 || !val2) return alert("Please fill both fields!");
+
+    const storageKey = 'db_' + currentTab;
+    const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+    data.push({ col1: val1, col2: val2 });
+
+    localStorage.setItem(storageKey, JSON.stringify(data));
+
+    document.getElementById('input1').value = '';
+    document.getElementById('input2').value = '';
+
+    renderTable(currentTab);
+}
+
+// RENDER TABLES
+function renderTable(tab) {
+
+    const area = document.getElementById('tableArea');
+
+    // STUDENTS TABLE (CUSTOM)
+    if(tab === 'students'){
+
+        const data = JSON.parse(localStorage.getItem('db_students')) || [];
+
+        if(data.length === 0){
+            area.innerHTML = `<p>No students found.</p>`;
+            return;
+        }
+
+        let html = `<table>
+            <tr>
+                <th>Name</th>
+                <th>Admission</th>
+                <th>Course</th>
+                <th>Units</th>
+            </tr>`;
+
+        data.forEach(s=>{
+            html += `<tr>
+                <td>${s.name}</td>
+                <td>${s.admission}</td>
+                <td>${s.course}</td>
+                <td>${s.units.join(', ')}</td>
+            </tr>`;
+        });
+
+        html += `</table>`;
+        area.innerHTML = html;
+        return;
+    }
+
+    // DEFAULT TABLE
+    const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
+
+    if(data.length === 0) {
+        area.innerHTML = `<p>No records found for ${tab}.</p>`;
+        return;
+    }
+
+    let html = `<table>
+        <tr>
+            <th>${document.getElementById('label1').innerText}</th>
+            <th>${document.getElementById('label2').innerText}</th>
+        </tr>`;
+
+    data.forEach(item => {
+        html += `<tr><td>${item.col1}</td><td>${item.col2}</td></tr>`;
+    });
+
+    html += `</table>`;
+    area.innerHTML = html;
+}
+
+// DASHBOARD
+function renderDashboard() {
+    const area = document.getElementById('tableArea');
+
+    area.innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
+            <div style="background:#00c0ef; color:white; padding:20px;">
+                <h3>${(JSON.parse(localStorage.getItem('db_students')) || []).length}</h3>
+                <p>Students</p>
+            </div>
+            <div style="background:#00a65a; color:white; padding:20px;">
+                <h3>${(JSON.parse(localStorage.getItem('db_courses')) || []).length}</h3>
+                <p>Courses</p>
+            </div>
+        </div>
+    `;
+}
+
+// RESET
+function resetSystem() {
+    if(confirm("Wipe all data?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
+// INIT
+renderDashboard();
+
+</script>
 </body>
 
 </html>
