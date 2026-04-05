@@ -15,21 +15,39 @@
         .nav-links li a { color: #bdc3c7; text-decoration: none; cursor: pointer; font-size: 14px; padding: 10px 0; display: block; }
         .nav-links li.active a { color: white; border-bottom: 2px solid var(--accent-orange); }
 
+        /* --- HERO PHOTO SECTION --- */
+        .hero-header { 
+            background: linear-gradient(rgba(11, 21, 40, 0.6), rgba(11, 21, 40, 0.6)), 
+                        url('https://images.unsplash.com/photo-1523050853063-bd8012fbb230?q=80&w=2070'); 
+            background-size: cover; 
+            background-position: center; 
+            height: 300px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            text-align: center;
+        }
+        .hero-header h1 { font-size: 3rem; margin: 0; }
+        .hero-header h1 span { color: var(--accent-orange); }
+
         /* Profile Circle */
         .profile-circle { background: #2c3e50; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--accent-orange); cursor: pointer; }
 
         /* Container & Cards */
-        .main-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: none; border-top: 5px solid var(--accent-orange); }
-        .card.active { display: block; }
+        .main-container { max-width: 1000px; margin: -50px auto 30px; padding: 0 20px; position: relative; z-index: 10; }
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: none; border-top: 5px solid var(--accent-orange); }
+        .card.active { display: block; animation: fadeIn 0.4s ease; }
         
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { text-align: left; background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; color: #555; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
         .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
-        .stat-box h4 { margin: 0 0 5px 0; color: #888; font-size: 12px; text-transform: uppercase; }
+        .stat-box h4 { margin: 0 0 5px 0; color: #888; font-size: 11px; text-transform: uppercase; }
         .stat-box p { margin: 0; font-weight: bold; color: var(--nav-dark); }
 
         .logout-btn { background: none; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 5px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
@@ -42,7 +60,7 @@
 
     <nav class="top-nav">
         <div style="display:flex; align-items:center; gap:20px;">
-            <h2 style="color: var(--accent-orange); margin:0;">ZETECH</h2>
+            <h2 style="color: white; margin:0;">ZETECH <span style="color: var(--accent-orange);">PORTAL</span></h2>
             <ul class="nav-links">
                 <li id="li-home" class="active"><a onclick="showSec('home')">Home</a></li>
                 <li id="li-units"><a onclick="showSec('units')">My Units</a></li>
@@ -57,28 +75,29 @@
         </div>
     </nav>
 
-    <main class="main-container">
+    <header class="hero-header" id="heroSection">
+        <div>
+            <h1 id="heroWelcome">Welcome!</h1>
+            <p>Your academic dashboard and records</p>
+        </div>
+    </header>
+
+    <main class="main-container" id="mainContainer">
         <section id="home" class="card active">
-            <h2 id="welcomeMsg">Welcome!</h2>
+            <h2>Dashboard Overview</h2>
             <div class="stat-grid">
                 <div class="stat-box"><h4>Registration No.</h4><p id="p-reg">-</p></div>
                 <div class="stat-box"><h4>Course</h4><p id="p-course">-</p></div>
                 <div class="stat-box"><h4>Status</h4><p id="p-status" style="color: green;">Active</p></div>
             </div>
-            <h3>My Details</h3>
-            <p><strong>Email:</strong> <span id="p-email">-</span></p>
+            <h3>Account Details</h3>
+            <p><strong>Official Email:</strong> <span id="p-email">-</span></p>
         </section>
 
         <section id="units" class="card">
             <h2>Registered Units</h2>
-            <p>Units currently assigned to your course.</p>
             <table>
-                <thead>
-                    <tr>
-                        <th>Unit Code</th>
-                        <th>Unit Name</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Unit Code</th><th>Unit Name</th></tr></thead>
                 <tbody id="unitsBody"></tbody>
             </table>
         </section>
@@ -101,75 +120,59 @@
     </main>
 
     <script>
-        // 1. Authentication Check
         const currentUserEmail = localStorage.getItem('currentUserEmail');
         const isLoggedIn = localStorage.getItem('isLoggedIn');
 
         if (!isLoggedIn || !currentUserEmail) {
-            window.location.href = "index.html"; // Ensure this matches your login filename
+            window.location.href = "index.html"; 
         }
 
         function loadStudentData() {
-            // Fetch Student from DB
             const allStudents = JSON.parse(localStorage.getItem('db_students')) || [];
             const student = allStudents.find(s => s.email.toLowerCase() === currentUserEmail.toLowerCase());
 
             if (!student) {
-                alert("Student profile not found!");
                 logout();
                 return;
             }
 
-            // --- Update UI Text ---
             document.getElementById('userNameDisplay').innerText = student.name;
             document.getElementById('userInitial').innerText = student.name.substring(0,2).toUpperCase();
-            document.getElementById('welcomeMsg').innerText = `Welcome back, ${student.name.split(' ')[0]}!`;
+            
+            // Updating the Hero Text
+            document.getElementById('heroWelcome').innerHTML = `Welcome, <span>${student.name.split(' ')[0]}</span>!`;
+            
             document.getElementById('p-reg').innerText = student.reg;
             document.getElementById('p-email').innerText = student.email;
             document.getElementById('p-course').innerText = student.course || "Not Assigned";
 
-            // --- Load Units ---
+            // Load Units
             const allUnits = JSON.parse(localStorage.getItem('db_units')) || [];
             const unitsBody = document.getElementById('unitsBody');
-            
-            // Clean matching: Remove extra spaces and ignore case
             const myCourse = (student.course || "").trim().toLowerCase();
             const myUnits = allUnits.filter(u => u.courseName.trim().toLowerCase() === myCourse);
             
-            unitsBody.innerHTML = "";
-            if(myUnits.length === 0) {
-                unitsBody.innerHTML = `<tr><td colspan="2" class="empty-msg">No units found for course: ${student.course}</td></tr>`;
-            } else {
-                myUnits.forEach(u => {
-                    unitsBody.innerHTML += `<tr><td>${u.code}</td><td>${u.name}</td></tr>`;
-                });
-            }
+            unitsBody.innerHTML = myUnits.length ? "" : `<tr><td colspan="2" class="empty-msg">No units found</td></tr>`;
+            myUnits.forEach(u => {
+                unitsBody.innerHTML += `<tr><td>${u.code}</td><td>${u.name}</td></tr>`;
+            });
 
-            // --- Load Marks ---
+            // Load Marks
             const marks = JSON.parse(localStorage.getItem('db_marks')) || [];
             const myMarks = marks.filter(m => m.reg === student.reg);
             const marksBody = document.getElementById('marksBody');
-            
-            marksBody.innerHTML = "";
-            if(myMarks.length === 0) {
-                marksBody.innerHTML = `<tr><td colspan="3" class="empty-msg">No results available yet.</td></tr>`;
-            } else {
-                myMarks.forEach(m => {
-                    const grade = getGradeLabel(m.score);
-                    marksBody.innerHTML += `<tr><td>${m.code}</td><td>${m.score}%</td><td><strong>${grade}</strong></td></tr>`;
-                });
-            }
+            marksBody.innerHTML = myMarks.length ? "" : `<tr><td colspan="3" class="empty-msg">No results yet.</td></tr>`;
+            myMarks.forEach(m => {
+                marksBody.innerHTML += `<tr><td>${m.code}</td><td>${m.score}%</td><td><strong>${getGradeLabel(m.score)}</strong></td></tr>`;
+            });
 
-            // --- Load Fees ---
+            // Fees
             const paid = parseFloat(student.fees) || 0; 
-            const totalFee = 50000; // Standard Example Fee
-            const balance = totalFee - paid;
-
+            const balance = 50000 - paid;
             document.getElementById('paidAmount').innerText = `KES ${paid.toLocaleString()}`;
             document.getElementById('balanceAmount').innerText = `KES ${balance.toLocaleString()}`;
         }
 
-        // Helper: Calculate Grades
         function getGradeLabel(score) {
             if (score >= 70) return 'A';
             if (score >= 60) return 'B';
@@ -178,8 +181,20 @@
             return 'E';
         }
 
-        // Navigation Control
+        // --- UPDATED NAVIGATION ---
         function showSec(id) {
+            const hero = document.getElementById('heroSection');
+            const container = document.getElementById('mainContainer');
+
+            // Hide photo if NOT on home page to save space
+            if (id === 'home') {
+                hero.style.display = 'flex';
+                container.style.marginTop = '-50px';
+            } else {
+                hero.style.display = 'none';
+                container.style.marginTop = '30px';
+            }
+
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
             
@@ -187,15 +202,11 @@
             document.getElementById('li-' + id).classList.add('active');
         }
 
-        // Clear session
         function logout() {
-            localStorage.removeItem("isLoggedIn");
-            localStorage.removeItem("currentUserEmail");
-            localStorage.removeItem("user_role");
+            localStorage.clear();
             window.location.href = "index.html"; 
         }
 
-        // Boot system
         window.onload = loadStudentData;
     </script>
 </body>
