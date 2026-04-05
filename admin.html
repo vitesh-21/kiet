@@ -33,9 +33,6 @@
         table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
         th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; }
         td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .status-pill { padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
-        .status-paid { background: #e6fffa; color: #00a65a; }
-        .status-pending { background: #fff5f5; color: #dd4b39; }
         .grade-badge { padding: 3px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 12px; }
         @media (max-width: 768px) { .sidebar { transform: translateX(-100%); } .sidebar.mobile-open { transform: translateX(0); } .content { margin-left: 0 !important; } }
     </style>
@@ -49,7 +46,7 @@
         <a class="nav-item" onclick="showTab('students', this)"><i class="fa fa-users"></i> Students</a>
         <a class="nav-item" onclick="showTab('courses', this)"><i class="fa fa-graduation-cap"></i> Courses</a>
         <a class="nav-item" onclick="showTab('units', this)"><i class="fa fa-book"></i> Units</a>
-        <a class="nav-item" onclick="showTab('marks', this)"><i class="fa fa-edit"></i> Marks</a>
+        <a class="nav-item" onclick="showTab('marks', this)"><i class="fa fa-edit"></i> Score Marks</a>
         <a class="nav-item" onclick="showTab('fees', this)"><i class="fa fa-money-bill"></i> Fees</a>
         <div class="nav-label">ACTIONS</div>
         <a class="nav-item" onclick="resetSystem()" style="color:#ff7675;"><i class="fa fa-trash"></i> Logout</a>
@@ -267,7 +264,7 @@ function renderTable(tab) {
         let html = `<table><tr><th>Name</th><th>Reg No</th><th>Paid</th><th>Balance</th></tr>`;
         students.forEach(s => {
             const paid = feeData[s.reg] || 0;
-            html += `<tr><td>${s.name}</td><td>${s.reg}</td><td>${paid}</td><td>${SEMESTER_FEE - paid}</td></tr>`;
+            html += `<tr><td>${s.name}</td><td>${s.reg}</td><td>${paid.toLocaleString()}</td><td>${(SEMESTER_FEE - paid).toLocaleString()}</td></tr>`;
         });
         area.innerHTML = html + `</table>`;
     } 
@@ -293,7 +290,31 @@ function renderDashboard() {
     const s = (JSON.parse(localStorage.getItem('db_students')) || []).length;
     const c = (JSON.parse(localStorage.getItem('db_courses')) || []).length;
     const u = (JSON.parse(localStorage.getItem('db_units')) || []).length;
-    document.getElementById('tableArea').innerHTML = `<div style="display:flex; gap:20px;"><div style="background:#00c0ef; color:white; padding:20px; flex:1;"><h3>${s}</h3><p>Students</p></div><div style="background:#00a65a; color:white; padding:20px; flex:1;"><h3>${c}</h3><p>Courses</p></div><div style="background:#f39c12; color:white; padding:20px; flex:1;"><h3>${u}</h3><p>Units</p></div></div>`;
+    
+    // Calculate total fees
+    const feeData = JSON.parse(localStorage.getItem('db_fees')) || {};
+    const totalFees = Object.values(feeData).reduce((a, b) => a + b, 0);
+
+    document.getElementById('tableArea').innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+            <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
+                <h3>${s}</h3>
+                <p>Students Registered</p>
+            </div>
+            <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
+                <h3>${c}</h3>
+                <p>Courses Available</p>
+            </div>
+            <div style="background:#f39c12; color:white; padding:20px; border-radius:3px;">
+                <h3>${u}</h3>
+                <p>Units Defined</p>
+            </div>
+            <div style="background:#605ca8; color:white; padding:20px; border-radius:3px;">
+                <h3>KES ${totalFees.toLocaleString()}</h3>
+                <p>Total Fees Collected</p>
+            </div>
+        </div>
+    `;
 }
 
 function resetSystem() { if(confirm("Clear system data?")) { localStorage.clear(); location.reload(); } }
