@@ -20,44 +20,35 @@
 
         body { margin: 0; font-family: 'Source Sans Pro', sans-serif; background-color: var(--main-bg); display: flex; min-height: 100vh; }
 
-        .sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); color: white; position: fixed; top: 0; left: 0; bottom: 0; transition: transform 0.3s ease; z-index: 1000; }
+        /* --- SIDEBAR --- */
+        .sidebar { width: var(--sidebar-width); background-color: var(--sidebar-bg); color: white; position: fixed; top: 0; left: 0; bottom: 0; transition: 0.3s; z-index: 1000; }
         .sidebar.collapsed { transform: translateX(-100%); }
-        .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; }
+        .brand { background-color: #1a2226; padding: 15px; text-align: center; font-weight: bold; }
         .nav-label { padding: 10px 20px; font-size: 12px; color: #4b646f; background: #1a2226; }
-        .nav-item { display: flex; align-items: center; padding: 12px 20px; color: var(--text-gray); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; }
+        .nav-item { display: flex; align-items: center; padding: 12px 20px; color: var(--text-gray); text-decoration: none; cursor: pointer; border-left: 3px solid transparent; }
         .nav-item:hover, .nav-item.active { background: var(--sidebar-hover); color: #fff; border-left-color: #3c8dbc; }
         .nav-item i { margin-right: 10px; width: 20px; }
 
-        .content { margin-left: var(--sidebar-width); flex-grow: 1; width: 100%; transition: margin-left 0.3s ease; }
+        /* --- CONTENT --- */
+        .content { margin-left: var(--sidebar-width); flex-grow: 1; transition: 0.3s; width: 100%; }
         .content.expanded { margin-left: 0; }
-        .top-nav { background-color: var(--topbar-bg); height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; color: white; }
-        .menu-toggle { cursor: pointer; font-size: 20px; }
+        .top-nav { background: var(--topbar-bg); height: 50px; display: flex; align-items: center; padding: 0 20px; color: white; justify-content: space-between; }
+        
         .container { padding: 20px; }
-
-        /* Dashboard Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .stat-card { padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 3px; }
-        .bg-cyan { background: #00c0ef; }
-        .bg-green { background: #00a65a; }
-        .bg-blue { background: #3c8dbc; }
-        .bg-orange { background: #f39c12; }
-
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-add { background: #3c8dbc; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; font-weight: 600; }
+        .card { background: white; padding: 20px; border-top: 3px solid #d2d6de; box-shadow: 0 1px 1px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
-        .info-box { background: white; padding: 20px; border-top: 3px solid #d2d6de; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        /* Form Styling */
+        .form-inline { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { flex: 1; min-width: 200px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 2px; box-sizing: border-box; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f4f4f4; text-align: left; padding: 10px; border-bottom: 2px solid #ddd; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
+        .btn-add { background: #00a65a; color: white; border: none; padding: 9px 20px; cursor: pointer; font-weight: bold; border-radius: 2px; }
+        .btn-add:hover { background: #008d4c; }
 
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 500px; border-radius: 5px; position: relative; max-height: 90vh; overflow-y: auto; }
-        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .close-modal { position: absolute; right: 20px; top: 15px; cursor: pointer; font-size: 20px; }
-
-        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn-save { background: #00a65a; color: white; border: none; width: 100%; padding: 10px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -68,194 +59,159 @@
 </head>
 <body>
 
-<div class="sidebar" id="sidebar">
-    <div class="brand">DIPLOMA ADMIN</div>
-    <div class="nav-label">MAIN NAVIGATION</div>
-    <a class="nav-item active" onclick="navigate('dashboard', event)"><i class="fa fa-dashboard"></i> Dashboard</a>
-    <a class="nav-item" onclick="navigate('students', event)"><i class="fa fa-users"></i> Students</a>
-    <a class="nav-item" onclick="navigate('courses', event)"><i class="fa fa-graduation-cap"></i> Courses</a>
-    <a class="nav-item" onclick="navigate('units', event)"><i class="fa fa-book"></i> Units</a>
-    <a class="nav-item" onclick="navigate('fees', event)"><i class="fa fa-money-bill"></i> Fees</a>
-    
-    <div class="nav-label">SYSTEM</div>
-    <a class="nav-item" onclick="clearAllData()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset Data</a>
-</div>
-
-<div class="content" id="content">
-    <nav class="top-nav">
-        <i class="fa fa-bars menu-toggle" id="menuBtn"></i>
-        <span>Diploma Management System</span>
-    </nav>
-
-    <div class="container" id="main-view"></div>
-</div>
-
-<div id="entryModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <div class="modal-header" id="modalTitle"></div>
-        <div id="modalBody"></div>
-        <button class="btn-save" onclick="saveData()">Save Record</button>
+    <div class="sidebar" id="sidebar">
+        <div class="brand">DIPLOMA ADMIN</div>
+        <div class="nav-label">MAIN NAVIGATION</div>
+        <a class="nav-item active" onclick="showTab('dashboard')"><i class="fa fa-dashboard"></i> Dashboard</a>
+        <a class="nav-item" onclick="showTab('students')"><i class="fa fa-users"></i> Students</a>
+        <a class="nav-item" onclick="showTab('courses')"><i class="fa fa-graduation-cap"></i> Courses</a>
+        <a class="nav-item" onclick="showTab('units')"><i class="fa fa-book"></i> Units</a>
+        <a class="nav-item" onclick="showTab('attendance')"><i class="fa fa-calendar-check"></i> Attendance</a>
+        <a class="nav-item" onclick="showTab('marks')"><i class="fa fa-poll"></i> Marks</a>
+        <a class="nav-item" onclick="showTab('fees')"><i class="fa fa-money-bill"></i> Fees</a>
+        <div class="nav-label">ACTIONS</div>
+        <a class="nav-item" onclick="resetSystem()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset All Data</a>
     </div>
-</div>
 
-<script>
-let currentTab = 'dashboard';
+    <div class="content" id="content">
+        <nav class="top-nav">
+            <i class="fa fa-bars" style="cursor:pointer" id="menuBtn"></i>
+            <span>System Manager</span>
+            <div>Admin <i class="fa fa-circle" style="color:#4f4; font-size:10px"></i></div>
+        </nav>
 
-// SIDEBAR TOGGLE
-document.getElementById('menuBtn').addEventListener('click', function() {
-    const sidebar = document.getElementById('sidebar');
-    const content = document.getElementById('content');
-    if (window.innerWidth > 768) {
-        sidebar.classList.toggle('collapsed');
-        content.classList.toggle('expanded');
-    } else {
-        sidebar.classList.toggle('mobile-open');
-    }
-});
-
-// NAVIGATION
-function navigate(tab, event) {
-    currentTab = tab;
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    if (event) event.currentTarget.classList.add('active');
-    renderView();
-}
-
-// RENDER VIEW
-function renderView() {
-    const container = document.getElementById('main-view');
-
-    // Stats for Dashboard
-    const studentCount = (JSON.parse(localStorage.getItem('students')) || []).length;
-    const courseCount = (JSON.parse(localStorage.getItem('sys_courses')) || []).length;
-    const unitCount = (JSON.parse(localStorage.getItem('sys_units')) || []).length;
-
-    let html = `<div class="page-header">
-        <h2>${currentTab.toUpperCase()}</h2>
-        ${currentTab !== 'dashboard' ? `<button class="btn-add" onclick="openModal()">+ Add ${currentTab.slice(0,-1)}</button>` : ''}
-    </div>`;
-
-    if (currentTab === 'dashboard') {
-        html += `
-        <div class="stats-grid">
-            <div class="stat-card bg-cyan">
-                <div><h3>${studentCount}</h3><p>STUDENTS</p></div>
-                <i class="fa fa-users fa-3x" style="opacity:0.3"></i>
+        <div class="container">
+            <h2 id="pageTitle">Dashboard</h2>
+            
+            <div id="addFormContainer" class="card" style="display:none;">
+                <div class="form-inline">
+                    <div class="form-group">
+                        <label id="label1">Name</label>
+                        <input type="text" id="input1" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label id="label2">Details</label>
+                        <input type="text" id="input2" placeholder="">
+                    </div>
+                    <button class="btn-add" onclick="handleSave()">Add Entry</button>
+                </div>
             </div>
-            <div class="stat-card bg-green">
-                <div><h3>${courseCount}</h3><p>COURSES</p></div>
-                <i class="fa fa-graduation-cap fa-3x" style="opacity:0.3"></i>
-            </div>
-            <div class="stat-card bg-blue">
-                <div><h3>${unitCount}</h3><p>UNITS</p></div>
-                <i class="fa fa-book fa-3x" style="opacity:0.3"></i>
+
+            <div class="card">
+                <div id="tableArea">
+                    <p>Welcome! Click a tab to start managing data.</p>
+                </div>
             </div>
         </div>
-        <div class="info-box">
-            <p>Welcome back, Administrator. Use the sidebar to manage system records.</p>
-        </div>`;
-    }
+    </div>
 
-    else if (currentTab === 'students') {
-        const students = JSON.parse(localStorage.getItem('students')) || [];
-        html += `<div class="info-box">`;
-        if (students.length === 0) {
-            html += `<p>No students found. Click Add to register one.</p>`;
-        } else {
-            html += `<table><tr><th>Name</th><th>Reg No</th><th>Email</th><th>Course</th></tr>`;
-            students.forEach(s => {
-                html += `<tr><td>${s.full_name}</td><td>${s.reg_number}</td><td>${s.email}</td><td>${s.course}</td></tr>`;
-            });
-            html += `</table>`;
-        }
-        html += `</div>`;
-    }
+    <script>
+        let currentTab = 'dashboard';
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
 
-    else {
-        const data = JSON.parse(localStorage.getItem('sys_' + currentTab)) || [];
-        html += `<div class="info-box">`;
-        if (data.length === 0) {
-            html += `<p>No records found in ${currentTab}.</p>`;
-        } else {
-            html += `<table><tr><th>Name</th><th>Details</th></tr>`;
-            data.forEach(item => {
-                html += `<tr><td>${item.name}</td><td>${item.detail}</td></tr>`;
-            });
-            html += `</table>`;
-        }
-        html += `</div>`;
-    }
-
-    container.innerHTML = html;
-}
-
-// MODAL LOGIC
-function openModal() {
-    const body = document.getElementById('modalBody');
-    const title = document.getElementById('modalTitle');
-    title.innerText = "Add " + currentTab.charAt(0).toUpperCase() + currentTab.slice(1, -1);
-
-    if (currentTab === 'students') {
-        body.innerHTML = `
-            <input type="text" id="full_name" placeholder="Full Name">
-            <input type="text" id="reg_number" placeholder="Reg Number">
-            <input type="email" id="email" placeholder="Email">
-            <select id="course">
-                <option value="">Select Course</option>
-                <option>IT</option>
-                <option>Computer Science</option>
-                <option>Business</option>
-            </select>
-        `;
-    } else {
-        body.innerHTML = `
-            <input type="text" id="inputName" placeholder="Name">
-            <input type="text" id="inputDetail" placeholder="Details">
-        `;
-    }
-    document.getElementById('entryModal').style.display = "block";
-}
-
-function closeModal() {
-    document.getElementById('entryModal').style.display = "none";
-}
-
-// SAVE LOGIC
-function saveData() {
-    if (currentTab === 'students') {
-        let students = JSON.parse(localStorage.getItem('students') || '[]');
-        const student = {
-            full_name: document.getElementById('full_name').value,
-            reg_number: document.getElementById('reg_number').value,
-            email: document.getElementById('email').value,
-            course: document.getElementById('course').value
+        // Sidebar toggle
+        document.getElementById('menuBtn').onclick = (e) => {
+            e.stopPropagation();
+            if(window.innerWidth > 768) {
+                sidebar.classList.toggle('collapsed');
+                content.classList.toggle('expanded');
+            } else {
+                sidebar.classList.toggle('mobile-open');
+            }
         };
-        if(!student.full_name) return alert("Enter Name");
-        students.push(student);
-        localStorage.setItem('students', JSON.stringify(students));
-    } else {
-        const name = document.getElementById('inputName').value;
-        const detail = document.getElementById('inputDetail').value;
-        if(!name) return alert("Enter Name");
-        let data = JSON.parse(localStorage.getItem('sys_' + currentTab)) || [];
-        data.push({ name, detail });
-        localStorage.setItem('sys_' + currentTab, JSON.stringify(data));
-    }
-    closeModal();
-    renderView();
-}
 
-function clearAllData() {
-    if(confirm("Wipe all data?")) {
-        localStorage.clear();
-        location.reload();
-    }
-}
+        function showTab(tab) {
+            currentTab = tab;
+            document.getElementById('pageTitle').innerText = tab.toUpperCase();
+            
+            // Update Active Menu
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
 
-// Start
-renderView();
-</script>
+            const formBox = document.getElementById('addFormContainer');
+            
+            if(tab === 'dashboard') {
+                formBox.style.display = 'none';
+                renderDashboard();
+            } else {
+                formBox.style.display = 'block';
+                setupForm(tab);
+                renderTable(tab);
+            }
+            if(window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
+        }
 
+        function setupForm(tab) {
+            const l1 = document.getElementById('label1');
+            const l2 = document.getElementById('label2');
+            const i1 = document.getElementById('input1');
+            const i2 = document.getElementById('input2');
+
+            // Reset inputs
+            i1.value = ''; i2.value = '';
+
+            // Customize labels based on tab
+            if(tab === 'students') { l1.innerText="Student Name"; l2.innerText="Admission No"; i1.placeholder="Ex: John Doe"; i2.placeholder="Ex: DIP/001"; }
+            else if(tab === 'courses') { l1.innerText="Course Title"; l2.innerText="Duration"; i1.placeholder="Ex: IT Diploma"; i2.placeholder="Ex: 2 Years"; }
+            else if(tab === 'units') { l1.innerText="Unit Name"; l2.innerText="Unit Code"; i1.placeholder="Ex: Programming I"; i2.placeholder="Ex: ICT101"; }
+            else if(tab === 'fees') { l1.innerText="Student Name"; l2.innerText="Amount Paid (KES)"; i1.placeholder="Ex: Jane Smith"; i2.placeholder="Ex: 5000"; }
+            else { l1.innerText="Title"; l2.innerText="Description"; i1.placeholder="Enter name"; i2.placeholder="Enter detail"; }
+        }
+
+        function handleSave() {
+            const val1 = document.getElementById('input1').value;
+            const val2 = document.getElementById('input2').value;
+
+            if(!val1 || !val2) return alert("Please fill both fields!");
+
+            const storageKey = 'db_' + currentTab;
+            const data = JSON.parse(localStorage.getItem(storageKey)) || [];
+            data.push({ col1: val1, col2: val2 });
+            localStorage.setItem(storageKey, JSON.stringify(data));
+
+            document.getElementById('input1').value = '';
+            document.getElementById('input2').value = '';
+            renderTable(currentTab);
+        }
+
+        function renderTable(tab) {
+            const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
+            const area = document.getElementById('tableArea');
+
+            if(data.length === 0) {
+                area.innerHTML = `<p>No records found for ${tab}. Use the form above to add some.</p>`;
+                return;
+            }
+
+            let html = `<table><tr><th>${document.getElementById('label1').innerText}</th><th>${document.getElementById('label2').innerText}</th></tr>`;
+            data.forEach(item => {
+                html += `<tr><td>${item.col1}</td><td>${item.col2}</td></tr>`;
+            });
+            html += `</table>`;
+            area.innerHTML = html;
+        }
+
+        function renderDashboard() {
+            const area = document.getElementById('tableArea');
+            area.innerHTML = `
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px;">
+                    <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px;">
+                        <h3>${(JSON.parse(localStorage.getItem('db_students')) || []).length}</h3><p>Students</p>
+                    </div>
+                    <div style="background:#00a65a; color:white; padding:20px; border-radius:3px;">
+                        <h3>${(JSON.parse(localStorage.getItem('db_courses')) || []).length}</h3><p>Courses</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function resetSystem() {
+            if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); }
+        }
+
+        // Default view
+        renderDashboard();
+    </script>
 </body>
 </html>
