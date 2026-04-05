@@ -122,10 +122,18 @@
 </div>
 
 <script>
-    // 1. Point to the SAME database keys used in the Admin Dashboard
-    const adminDB = JSON.parse(localStorage.getItem("db_admins")) || [
-        { email: "admin@gmail.com", username: "admin", password: "123", redirect: "admin.html" }
-    ];
+    // 1. Check for the Admin database. If it doesn't exist, create it immediately.
+    let adminDB = JSON.parse(localStorage.getItem("db_admins"));
+
+    if (!adminDB) {
+        adminDB = [{ 
+            email: "admin@gmail.com", 
+            username: "admin", 
+            password: "123", 
+            redirect: "admin.html" 
+        }];
+        localStorage.setItem("db_admins", JSON.stringify(adminDB));
+    }
 
     // 2. Load the students registered from the Admin Dashboard
     const studentDB = JSON.parse(localStorage.getItem("db_students")) || [];
@@ -144,9 +152,8 @@
         if (role === 'Admin') {
             // Check Admin Array
             userFound = adminDB.find(u => u.email === email && u.username === username && u.password === password);
-            if(userFound) userFound.redirect = "admin.html"; // Ensure redirect exists
         } else {
-            // Check Student Array (Using keys from the Admin Dashboard: name and reg)
+            // Check Student Array
             userFound = studentDB.find(u => 
                 u.email === email && 
                 (u.name === username || u.reg === username) && 
@@ -156,20 +163,19 @@
         }
 
         if (userFound) {
-            // SAVE SESSION
+            // SAVE SESSION DATA
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("user_role", role);
             localStorage.setItem("currentUserEmail", email);
             localStorage.setItem("username", username);
 
             // REDIRECT
-            window.location.href = userFound.redirect;
+            window.location.href = userFound.redirect || "admin.html";
         } else {
             errorBox.innerText = "Invalid credentials. Check your Email/Password.";
             errorBox.style.display = "block";
         }
     });
 </script>
-
 </body>
 </html>
