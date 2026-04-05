@@ -10,9 +10,9 @@
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-body); }
         
         /* Navigation */
-        .top-nav { background: var(--nav-dark); height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 50px; color: white; position: sticky; top: 0; }
-        .nav-links { display: flex; list-style: none; gap: 20px; }
-        .nav-links li a { color: #bdc3c7; text-decoration: none; cursor: pointer; font-size: 14px; }
+        .top-nav { background: var(--nav-dark); height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 50px; color: white; position: sticky; top: 0; z-index: 1000; }
+        .nav-links { display: flex; list-style: none; gap: 20px; margin: 0; padding: 0; }
+        .nav-links li a { color: #bdc3c7; text-decoration: none; cursor: pointer; font-size: 14px; padding: 10px 0; display: block; }
         .nav-links li.active a { color: white; border-bottom: 2px solid var(--accent-orange); }
 
         /* Profile Circle */
@@ -24,11 +24,16 @@
         .card.active { display: block; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; }
+        th { text-align: left; background: #f8f9fa; padding: 12px; border-bottom: 2px solid #eee; color: #555; }
         td { padding: 12px; border-bottom: 1px solid #eee; }
         
         .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
         .stat-box { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
+        .stat-box h4 { margin: 0 0 5px 0; color: #888; font-size: 12px; text-transform: uppercase; }
+        .stat-box p { margin: 0; font-weight: bold; color: var(--nav-dark); }
+
+        .logout-btn { background: none; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 5px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { background: var(--accent-orange); color: white; }
     </style>
 </head>
 <body>
@@ -43,8 +48,9 @@
             </ul>
         </div>
         <div style="display:flex; align-items:center; gap:15px;">
-            <span id="userNameDisplay"></span>
-            <div class="profile-circle" id="userInitial" onclick="logout()"></div>
+            <span id="userNameDisplay">Student Name</span>
+            <div class="profile-circle" id="userInitial">??</div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -52,72 +58,84 @@
         <section id="home" class="card active">
             <h2 id="welcomeMsg">Welcome!</h2>
             <div class="stat-grid">
+                <div class="stat-box"><h4>Registration No.</h4><p id="p-reg">-</p></div>
                 <div class="stat-box"><h4>Course</h4><p id="p-course">-</p></div>
-                <div class="stat-box"><h4>Year</h4><p id="p-year">-</p></div>
-                <div class="stat-box"><h4>Semester</h4><p id="p-sem">-</p></div>
+                <div class="stat-box"><h4>Status</h4><p id="p-status" style="color: green;">Active</p></div>
             </div>
-            <h3>My Units</h3>
-            <table id="unitTable">
-                <thead><tr><th>Unit Code</th><th>Unit Name</th></tr></thead>
-                <tbody id="unitBody"></tbody>
-            </table>
+            <h3>My Details</h3>
+            <p><strong>Email:</strong> <span id="p-email">-</span></p>
         </section>
 
         <section id="results" class="card">
             <h2>Academic Transcript</h2>
-            <table>
+            <table id="resultsTable">
                 <thead><tr><th>Unit Code</th><th>Score</th><th>Grade</th></tr></thead>
-                <tbody id="marksBody"></tbody>
+                <tbody id="marksBody">
+                    </tbody>
             </table>
         </section>
 
         <section id="fees" class="card">
             <h2>Fee Statement</h2>
-            <div style="background: #f9f9f9; padding: 20px; border-radius: 10px;">
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 10px; border-left: 5px solid green;">
                 <p>Total Paid: <strong id="paidAmount" style="color: green;">KES 0</strong></p>
-                <p>Balance: <strong id="balanceAmount" style="color: red;">KES 0</strong></p>
+                <p>Remaining Balance: <strong id="balanceAmount" style="color: red;">KES 0</strong></p>
             </div>
         </section>
     </main>
 
     <script>
-        // 1. SECURITY CHECK (Like the PHP Session check)
-        const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
-        if (!user) {
-            window.location.href = "index.html";
+        // 1. LOGIN SECURITY CHECK
+        // We look for the email saved by portal.html
+        const currentUserEmail = localStorage.getItem('currentUserEmail');
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+        if (!isLoggedIn || !currentUserEmail) {
+            window.location.href = "portal.html"; // Redirect to login if not authenticated
         }
 
-        // 2. DATA FETCHING (Filtering localDB by student)
+        // 2. LOAD DATA
         function loadStudentData() {
-            // Set profile info
-            document.getElementById('userNameDisplay').innerText = user.name;
-            document.getElementById('userInitial').innerText = user.name.substring(0,2).toUpperCase();
-            document.getElementById('welcomeMsg').innerText = `Welcome, ${user.name.split(' ')[0]}!`;
-            document.getElementById('p-course').innerText = user.courseName;
-            document.getElementById('p-year').innerText = user.year;
-            document.getElementById('p-sem').innerText = user.sem;
+            // Find the full student object from our main database
+            const allStudents = JSON.parse(localStorage.getItem('db_students')) || [];
+            const student = allStudents.find(s => s.email === currentUserEmail);
 
-            // Fetch Units
-            const units = JSON.parse(localStorage.getItem('db_units')) || [];
-            const myUnits = units.filter(u => u.courseId === user.courseId && u.year === user.year && u.sem === user.sem);
-            const unitBody = document.getElementById('unitBody');
-            myUnits.forEach(u => {
-                unitBody.innerHTML += `<tr><td>${u.code}</td><td>${u.name}</td></tr>`;
-            });
+            if (!student) {
+                alert("Student data not found!");
+                logout();
+                return;
+            }
 
-            // Fetch Marks
+            // Update UI with student info
+            document.getElementById('userNameDisplay').innerText = student.name;
+            document.getElementById('userInitial').innerText = student.name.substring(0,2).toUpperCase();
+            document.getElementById('welcomeMsg').innerText = `Welcome back, ${student.name.split(' ')[0]}!`;
+            
+            document.getElementById('p-reg').innerText = student.reg;
+            document.getElementById('p-email').innerText = student.email;
+            document.getElementById('p-course').innerText = student.course || "General Studies";
+
+            // Fetch Marks (Results)
             const marks = JSON.parse(localStorage.getItem('db_marks')) || [];
-            const myMarks = marks.filter(m => m.reg === user.reg);
+            const myMarks = marks.filter(m => m.reg === student.reg);
             const marksBody = document.getElementById('marksBody');
-            myMarks.forEach(m => {
-                const grade = getGradeLabel(m.score);
-                marksBody.innerHTML += `<tr><td>${m.code}</td><td>${m.score}%</td><td><strong>${grade}</strong></td></tr>`;
-            });
+            
+            marksBody.innerHTML = ""; // Clear placeholder
+            if(myMarks.length === 0) {
+                marksBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No results published yet.</td></tr>";
+            } else {
+                myMarks.forEach(m => {
+                    const grade = getGradeLabel(m.score);
+                    marksBody.innerHTML += `<tr><td>${m.code}</td><td>${m.score}%</td><td><strong>${grade}</strong></td></tr>`;
+                });
+            }
 
-            // Fetch Fees
-            const allFees = JSON.parse(localStorage.getItem('db_fees')) || {};
-            const paid = allFees[user.reg] || 0;
-            const balance = 50000 - paid; // Assuming 50k is the set fee
+            // Fetch Fees (assuming fee set in admin is what we show)
+            // Note: In your Admin, you might save fees differently, adjust key if needed
+            const paid = parseFloat(student.fees) || 0; 
+            const totalFee = 50000; // Fixed example fee
+            const balance = totalFee - paid;
+
             document.getElementById('paidAmount').innerText = `KES ${paid.toLocaleString()}`;
             document.getElementById('balanceAmount').innerText = `KES ${balance.toLocaleString()}`;
         }
@@ -138,10 +156,13 @@
         }
 
         function logout() {
-            sessionStorage.clear();
-            window.location.href = "index.html";
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("currentUserEmail");
+            localStorage.removeItem("user_role");
+            window.location.href = "portal.html";
         }
 
+        // Run on load
         window.onload = loadStudentData;
     </script>
 </body>
