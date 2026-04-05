@@ -37,18 +37,19 @@
         .container { padding: 20px; }
         .card { background: white; padding: 20px; border-top: 3px solid #d2d6de; box-shadow: 0 1px 1px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
-        /* Form Styling */
-        .form-inline { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-        .form-group { flex: 1; min-width: 200px; }
+        /* Form Styling - Expanded for multiple fields */
+        .form-container { display: flex; flex-direction: column; gap: 15px; }
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 180px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
         input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 2px; box-sizing: border-box; height: 35px; }
         
-        .btn-add { background: #00a65a; color: white; border: none; padding: 0 20px; cursor: pointer; font-weight: bold; border-radius: 2px; height: 35px; }
+        .btn-add { background: #00a65a; color: white; border: none; padding: 0 25px; cursor: pointer; font-weight: bold; border-radius: 2px; height: 40px; width: fit-content; margin-top: 10px; }
         .btn-add:hover { background: #008d4c; }
 
         table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
         th { text-align: left; background: #f4f4f4; padding: 12px; border-bottom: 2px solid #eee; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
+        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
 
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
@@ -66,8 +67,6 @@
         <a class="nav-item" onclick="showTab('students', this)"><i class="fa fa-users"></i> Students</a>
         <a class="nav-item" onclick="showTab('courses', this)"><i class="fa fa-graduation-cap"></i> Courses</a>
         <a class="nav-item" onclick="showTab('units', this)"><i class="fa fa-book"></i> Units</a>
-        <a class="nav-item" onclick="showTab('attendance', this)"><i class="fa fa-calendar-check"></i> Attendance</a>
-        <a class="nav-item" onclick="showTab('marks', this)"><i class="fa fa-poll"></i> Marks</a>
         <a class="nav-item" onclick="showTab('fees', this)"><i class="fa fa-money-bill"></i> Fees</a>
         <div class="nav-label">ACTIONS</div>
         <a class="nav-item" onclick="resetSystem()" style="color:#ff7675;"><i class="fa fa-trash"></i> Reset All Data</a>
@@ -84,23 +83,12 @@
             <h2 id="pageTitle">Dashboard</h2>
             
             <div id="addFormContainer" class="card" style="display:none;">
-                <div class="form-inline" id="mainForm">
-                    <div class="form-group">
-                        <label id="label1">Name</label>
-                        <input type="text" id="input1" placeholder="">
+                <div class="form-container" id="dynamicForm">
                     </div>
-                    <div class="form-group">
-                        <label id="label2">Details</label>
-                        <input type="text" id="input2" placeholder="">
-                    </div>
-                    <button class="btn-add" onclick="handleSave()">Add Entry</button>
-                </div>
             </div>
 
             <div class="card">
-                <div id="tableArea">
-                    <p>Welcome! Click a tab to start managing data.</p>
-                </div>
+                <div id="tableArea"></div>
             </div>
         </div>
     </div>
@@ -123,12 +111,10 @@ document.getElementById('menuBtn').onclick = (e) => {
 function showTab(tab, element) {
     currentTab = tab;
     document.getElementById('pageTitle').innerText = tab.toUpperCase();
-
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     if(element) element.classList.add('active');
 
     const formBox = document.getElementById('addFormContainer');
-
     if(tab === 'dashboard') {
         formBox.style.display = 'none';
         renderDashboard();
@@ -137,56 +123,54 @@ function showTab(tab, element) {
         setupForm(tab);
         renderTable(tab);
     }
-
-    if(window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
 }
 
 function setupForm(tab) {
-    const l1 = document.getElementById('label1');
-    const l2 = document.getElementById('label2');
-    const i1 = document.getElementById('input1');
-    const i2 = document.getElementById('input2');
+    const container = document.getElementById('dynamicForm');
+    container.innerHTML = ''; // Clear previous fields
 
-    i1.value = '';
-    i2.value = '';
-
-    // Remove existing custom dropdown wrapper if it exists
-    const existingDropdown = document.getElementById('extraFieldWrapper');
-    if(existingDropdown) existingDropdown.remove();
-
-    if(tab === 'students') {
-        l1.innerText = "Student Name";
-        l2.innerText = "Admission No";
-        i1.placeholder = "Ex: John Doe";
-        i2.placeholder = "Ex: DIP/001";
-
-        const div = document.createElement('div');
-        div.className = "form-group";
-        div.id = "extraFieldWrapper";
-        div.innerHTML = `
-            <label>Course</label>
-            <select id="courseSelect"></select>
+    if(tab === 'courses') {
+        container.innerHTML = `
+            <div class="form-row">
+                <div class="form-group"><label>Course Name</label><input type="text" id="c_name" placeholder="Ex: IT Diploma"></div>
+                <div class="form-group"><label>Course ID</label><input type="text" id="c_id" placeholder="Ex: COMP-01"></div>
+                <div class="form-group"><label>Duration</label><input type="text" id="c_duration" placeholder="Ex: 2 Years"></div>
+            </div>
+            <button class="btn-add" onclick="handleSave()">Add Course</button>
         `;
-        document.getElementById('mainForm').insertBefore(div, document.querySelector('.btn-add'));
+    } 
+    else if(tab === 'students') {
+        container.innerHTML = `
+            <div class="form-row">
+                <div class="form-group"><label>Full Name</label><input type="text" id="s_name" placeholder="Full Name"></div>
+                <div class="form-group"><label>Reg Number</label><input type="text" id="s_reg" placeholder="Admission No"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="s_email" placeholder="Email Address"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Password</label><input type="password" id="s_pass" placeholder="Password"></div>
+                <div class="form-group"><label>Select Course</label><select id="courseSelect"></select></div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <select id="s_year"><option value="1">Year 1</option><option value="2">Year 2</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Semester</label>
+                    <select id="s_sem"><option value="1">Semester 1</option><option value="2">Semester 2</option></select>
+                </div>
+            </div>
+            <button class="btn-add" onclick="handleSave()">Register Student</button>
+        `;
         loadCoursesIntoDropdown();
-    } else if(tab === 'courses') {
-        l1.innerText="Course Title";
-        l2.innerText="Duration";
-        i1.placeholder="Ex: IT Diploma";
-        i2.placeholder="Ex: 2 Years";
-    } else if(tab === 'units') {
-        l1.innerText="Unit Name";
-        l2.innerText="Unit Code";
-        i1.placeholder="Ex: Programming I";
-        i2.placeholder="Ex: ICT101";
-    } else if(tab === 'fees') {
-        l1.innerText="Student Name";
-        l2.innerText="Amount Paid (KES)";
-        i1.placeholder="Ex: Jane Smith";
-        i2.placeholder="Ex: 5000";
-    } else {
-        l1.innerText="Title";
-        l2.innerText="Description";
+    }
+    else {
+        // Generic form for Units/Fees
+        container.innerHTML = `
+            <div class="form-row">
+                <div class="form-group"><label>Title</label><input type="text" id="gen_1"></div>
+                <div class="form-group"><label>Details</label><input type="text" id="gen_2"></div>
+            </div>
+            <button class="btn-add" onclick="handleSave()">Add Entry</button>
+        `;
     }
 }
 
@@ -194,132 +178,101 @@ function loadCoursesIntoDropdown() {
     const courses = JSON.parse(localStorage.getItem('db_courses')) || [];
     const select = document.getElementById('courseSelect');
     if(!select) return;
-
-    select.innerHTML = '<option value="">-- Select Course --</option>';
-    courses.forEach(course => {
-        const option = document.createElement('option');
-        option.value = course.col1;
-        option.textContent = course.col1;
-        select.appendChild(option);
+    select.innerHTML = '<option value="">-- Choose Course --</option>';
+    courses.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = `${c.name} (${c.id})`;
+        opt.textContent = `${c.name} (${c.id})`;
+        select.appendChild(opt);
     });
 }
 
 function handleSave() {
-    if(currentTab === 'students'){
-        const name = document.getElementById('input1').value;
-        const admission = document.getElementById('input2').value;
-        const course = document.getElementById('courseSelect').value;
-
-        if(!name || !admission || !course){
-            alert("Please fill in Student Name, Admission No, and select a Course!");
-            return;
-        }
-
-        const students = JSON.parse(localStorage.getItem('db_students')) || [];
-        // Map current units to the student automatically
-        const units = JSON.parse(localStorage.getItem('db_units')) || [];
-
-        students.push({
-            name: name,
-            admission: admission,
-            course: course,
-            units: units.length > 0 ? units.map(u => u.col1) : ["No units assigned"]
-        });
-
-        localStorage.setItem('db_students', JSON.stringify(students));
-        document.getElementById('input1').value = '';
-        document.getElementById('input2').value = '';
-        renderTable('students');
-        return;
+    if(currentTab === 'courses') {
+        const name = document.getElementById('c_name').value;
+        const id = document.getElementById('c_id').value;
+        const duration = document.getElementById('c_duration').value;
+        if(!name || !id || !duration) return alert("Fill all course fields!");
+        saveData('db_courses', { name, id, duration });
+    } 
+    else if(currentTab === 'students') {
+        const entry = {
+            name: document.getElementById('s_name').value,
+            reg: document.getElementById('s_reg').value,
+            email: document.getElementById('s_email').value,
+            course: document.getElementById('courseSelect').value,
+            year: document.getElementById('s_year').value,
+            sem: document.getElementById('s_sem').value
+        };
+        if(!entry.name || !entry.reg || !entry.course) return alert("Please fill at least Name, Reg No, and Course!");
+        saveData('db_students', entry);
+    }
+    else {
+        const v1 = document.getElementById('gen_1').value;
+        const v2 = document.getElementById('gen_2').value;
+        if(!v1 || !v2) return alert("Fill both fields!");
+        saveData('db_' + currentTab, { v1, v2 });
     }
 
-    const val1 = document.getElementById('input1').value;
-    const val2 = document.getElementById('input2').value;
-
-    if(!val1 || !val2) return alert("Please fill both fields!");
-
-    const storageKey = 'db_' + currentTab;
-    const data = JSON.parse(localStorage.getItem(storageKey)) || [];
-    data.push({ col1: val1, col2: val2 });
-    localStorage.setItem(storageKey, JSON.stringify(data));
-
-    document.getElementById('input1').value = '';
-    document.getElementById('input2').value = '';
+    setupForm(currentTab);
     renderTable(currentTab);
+}
+
+function saveData(key, obj) {
+    const data = JSON.parse(localStorage.getItem(key)) || [];
+    data.push(obj);
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
 function renderTable(tab) {
     const area = document.getElementById('tableArea');
+    const data = JSON.parse(localStorage.getItem(tab === 'students' ? 'db_students' : 'db_' + tab)) || [];
 
-    if(tab === 'students'){
-        const data = JSON.parse(localStorage.getItem('db_students')) || [];
-        if(data.length === 0){
-            area.innerHTML = `<p>No students found. Add one above.</p>`;
-            return;
-        }
-
-        let html = `<table>
-            <tr><th>Name</th><th>Admission</th><th>Course</th><th>Units</th></tr>`;
-        data.forEach(s=>{
-            html += `<tr>
-                <td>${s.name}</td>
-                <td>${s.admission}</td>
-                <td>${s.course}</td>
-                <td><small>${s.units.join(', ')}</small></td>
-            </tr>`;
-        });
-        area.innerHTML = html + `</table>`;
-        return;
-    }
-
-    const data = JSON.parse(localStorage.getItem('db_' + tab)) || [];
     if(data.length === 0) {
-        area.innerHTML = `<p>No records found for ${tab}.</p>`;
+        area.innerHTML = "<p>No records found.</p>";
         return;
     }
 
-    let html = `<table>
-        <tr>
-            <th>${document.getElementById('label1').innerText}</th>
-            <th>${document.getElementById('label2').innerText}</th>
-        </tr>`;
-    data.forEach(item => {
-        html += `<tr><td>${item.col1}</td><td>${item.col2}</td></tr>`;
-    });
+    let html = `<table>`;
+    if(tab === 'courses') {
+        html += `<tr><th>Course Name</th><th>Course ID</th><th>Duration</th></tr>`;
+        data.forEach(item => {
+            html += `<tr><td>${item.name}</td><td>${item.id}</td><td>${item.duration}</td></tr>`;
+        });
+    } 
+    else if(tab === 'students') {
+        html += `<tr><th>Name</th><th>Reg No</th><th>Email</th><th>Course (ID)</th><th>Yr/Sem</th></tr>`;
+        data.forEach(item => {
+            html += `<tr><td>${item.name}</td><td>${item.reg}</td><td>${item.email}</td><td>${item.course}</td><td>Y${item.year} S${item.sem}</td></tr>`;
+        });
+    }
+    else {
+        html += `<tr><th>Title</th><th>Details</th></tr>`;
+        data.forEach(item => {
+            html += `<tr><td>${item.v1}</td><td>${item.v2}</td></tr>`;
+        });
+    }
     area.innerHTML = html + `</table>`;
 }
 
 function renderDashboard() {
-    const sCount = (JSON.parse(localStorage.getItem('db_students')) || []).length;
-    const cCount = (JSON.parse(localStorage.getItem('db_courses')) || []).length;
-    const uCount = (JSON.parse(localStorage.getItem('db_units')) || []).length;
-
+    const s = (JSON.parse(localStorage.getItem('db_students')) || []).length;
+    const c = (JSON.parse(localStorage.getItem('db_courses')) || []).length;
     document.getElementById('tableArea').innerHTML = `
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px;">
-            <div style="background:#00c0ef; color:white; padding:20px; border-radius:3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <h3 style="margin:0">${sCount}</h3>
-                <p style="margin:0">Registered Students</p>
-            </div>
-            <div style="background:#00a65a; color:white; padding:20px; border-radius:3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <h3 style="margin:0">${cCount}</h3>
-                <p style="margin:0">Available Courses</p>
-            </div>
-             <div style="background:#f39c12; color:white; padding:20px; border-radius:3px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <h3 style="margin:0">${uCount}</h3>
-                <p style="margin:0">Total Units</p>
-            </div>
+        <div style="display:flex; gap:20px;">
+            <div style="background:#00c0ef; color:white; padding:20px; flex:1; border-radius:3px;"><h3>${s}</h3><p>Students Registered</p></div>
+            <div style="background:#00a65a; color:white; padding:20px; flex:1; border-radius:3px;"><h3>${c}</h3><p>Courses Available</p></div>
         </div>
     `;
 }
 
 function resetSystem() {
-    if(confirm("Are you sure? This will wipe all students, courses, and settings.")) {
-        localStorage.clear();
-        location.reload();
+    if(confirm("Are you sure you want to delete all students and courses?")) { 
+        localStorage.clear(); 
+        location.reload(); 
     }
 }
 
-// Default view
 renderDashboard();
 </script>
 </body>
