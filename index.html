@@ -87,7 +87,6 @@
         }
     </style>
 </head>
-
 <body>
 
 <div class="card">
@@ -116,13 +115,13 @@
     </form>
 
     <div class="footer-links">
-        <!-- ✅ FIXED LINK -->
         <a href="forgot_password.html">Forgot Password?</a>
     </div>
 </div>
 
 <script>
-    // 1. Initial Admin setup (Check if admin exists, if not, create one)
+    // 1. Initial Admin & Student setup
+    // This creates a default admin and a test student if the database is empty.
     let adminDB = JSON.parse(localStorage.getItem("db_admins"));
     if (!adminDB) {
         adminDB = [{ 
@@ -134,11 +133,25 @@
         localStorage.setItem("db_admins", JSON.stringify(adminDB));
     }
 
+    // Creating a test student so you can verify the login works
+    let studentDB = JSON.parse(localStorage.getItem("db_students")) || [];
+    if (studentDB.length === 0) {
+        studentDB.push({
+            email: "student@gmail.com",
+            name: "Test Student",
+            reg: "SIT/001",
+            password: "123",
+            course: "Software Engineering",
+            fees: "15000"
+        });
+        localStorage.setItem("db_students", JSON.stringify(studentDB));
+    }
+
     document.getElementById('loginForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // 2. Get the latest student data from the database
-        const studentDB = JSON.parse(localStorage.getItem("db_students")) || [];
+        // Refresh database from localStorage
+        const currentStudentDB = JSON.parse(localStorage.getItem("db_students")) || [];
 
         const email = document.getElementById('email').value.trim().toLowerCase();
         const username = document.getElementById('username').value.trim();
@@ -148,7 +161,6 @@
 
         let userFound = null;
 
-        // 3. Logic for Admin Login
         if (role === 'Admin') {
             userFound = adminDB.find(u => 
                 u.email.toLowerCase() === email && 
@@ -156,32 +168,29 @@
                 u.password === password
             );
             if(userFound) userFound.redirect = "admin.html";
-        } 
-        // 4. Logic for Student Login
-        else {
-            userFound = studentDB.find(u => 
+        } else {
+            // Student logic: matching email and (name OR registration number)
+            userFound = currentStudentDB.find(u => 
                 u.email.toLowerCase() === email && 
-                (u.name === username || u.reg === username) && 
+                (u.name.toLowerCase() === username.toLowerCase() || u.reg === username) && 
                 u.password === password
             );
             
-            // CRITICAL: This must match your filename exactly!
+            // CRITICAL: Matches your filename exactly
             if(userFound) userFound.redirect = "portal.html"; 
         }
 
-        // 5. Execution of Login
         if (userFound) {
-            // Save session data so the portal knows who is logged in
+            // Set session data
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("user_role", role);
             localStorage.setItem("currentUserEmail", email);
             localStorage.setItem("username", username);
 
-            // Move to the next page
+            // Redirect
             window.location.href = userFound.redirect;
         } else {
-            // Show error message if login fails
-            errorBox.innerText = "Invalid credentials. Please check your details.";
+            errorBox.innerText = "Invalid credentials. Ensure the user is registered in the Admin panel.";
             errorBox.style.display = "block";
         }
     });
