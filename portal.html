@@ -43,7 +43,7 @@
             <h2 style="color: var(--accent-orange); margin:0;">ZETECH</h2>
             <ul class="nav-links">
                 <li id="li-home" class="active"><a onclick="showSec('home')">Home</a></li>
-                <li id="li-results"><a onclick="showSec('results')">Results</a></li>
+                <li id="li-units"><a onclick="showSec('units')">My Units</a></li> <li id="li-results"><a onclick="showSec('results')">Results</a></li>
                 <li id="li-fees"><a onclick="showSec('fees')">Finance</a></li>
             </ul>
         </div>
@@ -66,12 +66,26 @@
             <p><strong>Email:</strong> <span id="p-email">-</span></p>
         </section>
 
+        <section id="units" class="card">
+            <h2>Registered Units</h2>
+            <p>Below are the units assigned to your course.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Unit Code</th>
+                        <th>Unit Name</th>
+                    </tr>
+                </thead>
+                <tbody id="unitsBody">
+                    </tbody>
+            </table>
+        </section>
+
         <section id="results" class="card">
             <h2>Academic Transcript</h2>
             <table id="resultsTable">
                 <thead><tr><th>Unit Code</th><th>Score</th><th>Grade</th></tr></thead>
-                <tbody id="marksBody">
-                    </tbody>
+                <tbody id="marksBody"></tbody>
             </table>
         </section>
 
@@ -85,18 +99,14 @@
     </main>
 
     <script>
-        // 1. LOGIN SECURITY CHECK
-        // We look for the email saved by portal.html
         const currentUserEmail = localStorage.getItem('currentUserEmail');
         const isLoggedIn = localStorage.getItem('isLoggedIn');
 
         if (!isLoggedIn || !currentUserEmail) {
-            window.location.href = "portal.html"; // Redirect to login if not authenticated
+            window.location.href = "portal.html";
         }
 
-        // 2. LOAD DATA
         function loadStudentData() {
-            // Find the full student object from our main database
             const allStudents = JSON.parse(localStorage.getItem('db_students')) || [];
             const student = allStudents.find(s => s.email === currentUserEmail);
 
@@ -106,7 +116,6 @@
                 return;
             }
 
-            // Update UI with student info
             document.getElementById('userNameDisplay').innerText = student.name;
             document.getElementById('userInitial').innerText = student.name.substring(0,2).toUpperCase();
             document.getElementById('welcomeMsg').innerText = `Welcome back, ${student.name.split(' ')[0]}!`;
@@ -115,12 +124,28 @@
             document.getElementById('p-email').innerText = student.email;
             document.getElementById('p-course').innerText = student.course || "General Studies";
 
-            // Fetch Marks (Results)
+            // LOAD UNITS
+            const allUnits = JSON.parse(localStorage.getItem('db_units')) || [];
+            const unitsBody = document.getElementById('unitsBody');
+            
+            // Filter units by the student's course name
+            const myUnits = allUnits.filter(u => u.courseName === student.course);
+            
+            unitsBody.innerHTML = "";
+            if(myUnits.length === 0) {
+                unitsBody.innerHTML = "<tr><td colspan='2' style='text-align:center;'>No units registered for this course.</td></tr>";
+            } else {
+                myUnits.forEach(u => {
+                    unitsBody.innerHTML += `<tr><td>${u.code}</td><td>${u.name}</td></tr>`;
+                });
+            }
+
+            // LOAD MARKS
             const marks = JSON.parse(localStorage.getItem('db_marks')) || [];
             const myMarks = marks.filter(m => m.reg === student.reg);
             const marksBody = document.getElementById('marksBody');
             
-            marksBody.innerHTML = ""; // Clear placeholder
+            marksBody.innerHTML = "";
             if(myMarks.length === 0) {
                 marksBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No results published yet.</td></tr>";
             } else {
@@ -130,10 +155,9 @@
                 });
             }
 
-            // Fetch Fees (assuming fee set in admin is what we show)
-            // Note: In your Admin, you might save fees differently, adjust key if needed
+            // LOAD FEES
             const paid = parseFloat(student.fees) || 0; 
-            const totalFee = 50000; // Fixed example fee
+            const totalFee = 50000; 
             const balance = totalFee - paid;
 
             document.getElementById('paidAmount').innerText = `KES ${paid.toLocaleString()}`;
@@ -162,7 +186,6 @@
             window.location.href = "portal.html";
         }
 
-        // Run on load
         window.onload = loadStudentData;
     </script>
 </body>
